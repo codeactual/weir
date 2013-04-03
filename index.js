@@ -43,7 +43,6 @@ configurable(Bddflow.prototype);
  */
 Bddflow.prototype.run = function() {
   var name = this.get('name');
-
   var d = new Describe(name);
   d.describe(name, this.get('initDescribe'));
   runArrayOfFn(d.__steps, this.get('done'), this.get('concurrency'));
@@ -152,7 +151,7 @@ function Describe(name) {
    * @property
    * @type object
    */
-  this.__hooks = new Bddflow.HookSet();
+  this.__hooks = new HookSet();
 }
 Describe.prototype.getInheritableContext = Bddflow.getInheritableContext;
 
@@ -173,7 +172,7 @@ Describe.prototype.it = function(name, cb) {
  * @param {string} name
  * @param {function} cb Batch#push compat.
  */
-Describe.prototype.describe = function(name, cb, parallel) {
+Describe.prototype.describe = function(name, cb) {
   var self = this;
   var func = function(done) {
     // Collect steps nested in the given step.
@@ -218,6 +217,8 @@ Describe.prototype.describe = function(name, cb, parallel) {
               done();
             });
           });
+          batch.concurrency = 1;
+          batch.end(done);
         };
       });
 
@@ -229,6 +230,7 @@ Describe.prototype.describe = function(name, cb, parallel) {
       f.__hooks.after.call(a, done);
     });
 
+    batch.concurrency = 1;
     batch.end(done);
   };
   func.type = 'describe';
