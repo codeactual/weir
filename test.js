@@ -70,9 +70,8 @@ describe('Bddflow', function() {
 
     var flow = new Bddflow();
     flow
-      .set('name', 'f')
       .set('done', done.bind(this))
-      .set('initDescribe', function() {
+      .addRootDescribe(this.test.name, function() {
         self.initDescribe.call(this, log);
       })
       .run();
@@ -94,9 +93,8 @@ describe('Bddflow', function() {
 
     var flow = new Bddflow();
     flow
-      .set('name', 'f')
       .set('done', done.bind(this))
-      .set('initDescribe', function() {
+      .addRootDescribe(this.test.name, function() {
         self.initDescribe.call(this, log);
       })
       .addContextProp('prop', prop)

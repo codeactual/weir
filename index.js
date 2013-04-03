@@ -32,11 +32,10 @@ function create() {
 
 function Bddflow() {
   this.settings = {
-    name: '',
     initDescribe: noOp,
-    done: noOp,
-    concurrency: 1
+    done: noOp
   };
+  this.rootDescribes = [];
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
 }
@@ -44,16 +43,32 @@ function Bddflow() {
 configurable(Bddflow.prototype);
 
 /**
- * Run the batched steps.
+ * Add a "root" describe().
+ *
+ * @param {string} name
+ * @param {function} cb
+ */
+Bddflow.prototype.addRootDescribe = function(name, cb) {
+  var desc = new Describe(name);
+  desc.describe(name, cb);
+  this.rootDescribes.push(desc);
+  return this;
+};
+
+/**
+ * Run the batched steps in each root describe().
  */
 Bddflow.prototype.run = function() {
-  var name = this.get('name');
-  var desc = new Describe(name);
-
-  extend(desc, this.seedProps);
-
-  desc.describe(name, this.get('initDescribe'));
-  runArrayOfFn(desc.__steps, this.get('done'), this.get('concurrency'));
+  var self = this;
+  var batch = new Batch();
+  batch.concurrency = 1;
+  this.rootDescribes.forEach(function(desc) {
+    batch.push(function(taskDone) {
+      extend(desc, self.seedProps);
+      runArrayOfFn(desc.__steps, taskDone, 1);
+    });
+  });
+  batch.end(this.get('done'));
 };
 
 /**
