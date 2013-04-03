@@ -2,34 +2,18 @@
   "name": "bdd-flow",
   "version": "0.1.0",
   "dependencies": {
+    "chai": {
+      "version": "1.5.0",
+      "from": "chai@1.5.0"
+    },
     "grunt-shell": {
       "version": "0.2.1",
       "from": "grunt-shell@0.2.1",
       "resolved": "https://registry.npmjs.org/grunt-shell/-/grunt-shell-0.2.1.tgz"
     },
-    "chai": {
-      "version": "1.5.0",
-      "from": "chai@1.5.0"
-    },
     "sinon-chai": {
       "version": "2.3.1",
       "from": "sinon-chai@2.3.1"
-    },
-    "sinon": {
-      "version": "1.6.0",
-      "from": "sinon@1.6.0",
-      "dependencies": {
-        "buster-format": {
-          "version": "0.5.5",
-          "from": "buster-format@0.5.5",
-          "dependencies": {
-            "buster-core": {
-              "version": "0.6.4",
-              "from": "buster-core@0.6.4"
-            }
-          }
-        }
-      }
     },
     "mocha": {
       "version": "1.8.2",
@@ -69,6 +53,22 @@
         "ms": {
           "version": "0.3.0",
           "from": "ms@0.3.0"
+        }
+      }
+    },
+    "sinon": {
+      "version": "1.6.0",
+      "from": "sinon@1.6.0",
+      "dependencies": {
+        "buster-format": {
+          "version": "0.5.5",
+          "from": "buster-format@0.5.5",
+          "dependencies": {
+            "buster-core": {
+              "version": "0.6.4",
+              "from": "buster-core@0.6.4"
+            }
+          }
         }
       }
     },
@@ -240,123 +240,6 @@
         }
       }
     },
-    "grunt-cli": {
-      "version": "0.1.6",
-      "from": "grunt-cli@0.1.6",
-      "dependencies": {
-        "nopt": {
-          "version": "1.0.10",
-          "from": "nopt@1.0.10",
-          "dependencies": {
-            "abbrev": {
-              "version": "1.0.4",
-              "from": "abbrev@1.0.4"
-            }
-          }
-        },
-        "findup-sync": {
-          "version": "0.1.2",
-          "from": "findup-sync@0.1.2",
-          "dependencies": {
-            "glob": {
-              "version": "3.1.21",
-              "from": "glob@3.1.21",
-              "dependencies": {
-                "minimatch": {
-                  "version": "0.2.11",
-                  "from": "minimatch@0.2.11",
-                  "dependencies": {
-                    "lru-cache": {
-                      "version": "2.3.0",
-                      "from": "lru-cache@2.3.0"
-                    },
-                    "sigmund": {
-                      "version": "1.0.0",
-                      "from": "sigmund@1.0.0"
-                    }
-                  }
-                },
-                "graceful-fs": {
-                  "version": "1.2.0",
-                  "from": "graceful-fs@1.2.0"
-                },
-                "inherits": {
-                  "version": "1.0.0",
-                  "from": "inherits@1.0.0"
-                }
-              }
-            },
-            "lodash": {
-              "version": "1.0.1",
-              "from": "lodash@1.0.1"
-            }
-          }
-        }
-      }
-    },
-    "grunt-contrib-jshint": {
-      "version": "0.3.0",
-      "from": "grunt-contrib-jshint@0.3.0",
-      "dependencies": {
-        "jshint": {
-          "version": "1.1.0",
-          "from": "jshint@1.1.0",
-          "dependencies": {
-            "esprima": {
-              "version": "1.1.0-dev",
-              "from": "https://github.com/ariya/esprima/tarball/master",
-              "resolved": "https://github.com/ariya/esprima/tarball/master"
-            },
-            "shelljs": {
-              "version": "0.1.2",
-              "from": "shelljs@0.1.2"
-            },
-            "underscore": {
-              "version": "1.4.4",
-              "from": "underscore@1.4.4"
-            },
-            "peakle": {
-              "version": "0.0.1",
-              "from": "peakle@0.0.1"
-            },
-            "cli": {
-              "version": "0.4.4-2",
-              "from": "cli@0.4.4-2",
-              "dependencies": {
-                "glob": {
-                  "version": "3.1.21",
-                  "from": "glob@3.1.21",
-                  "dependencies": {
-                    "graceful-fs": {
-                      "version": "1.2.0",
-                      "from": "graceful-fs@1.2.0"
-                    },
-                    "inherits": {
-                      "version": "1.0.0",
-                      "from": "inherits@1.0.0"
-                    }
-                  }
-                }
-              }
-            },
-            "minimatch": {
-              "version": "0.2.11",
-              "from": "minimatch@0.2.11",
-              "dependencies": {
-                "lru-cache": {
-                  "version": "2.3.0",
-                  "from": "lru-cache@2.3.0"
-                },
-                "sigmund": {
-                  "version": "1.0.0",
-                  "from": "sigmund@1.0.0"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "component": {
       "version": "0.13.2",
       "from": "component@0.13.2",
@@ -497,6 +380,123 @@
         "debug": {
           "version": "0.7.2",
           "from": "debug@0.7.2"
+        }
+      }
+    },
+    "grunt-cli": {
+      "version": "0.1.6",
+      "from": "grunt-cli@0.1.6",
+      "dependencies": {
+        "nopt": {
+          "version": "1.0.10",
+          "from": "nopt@1.0.10",
+          "dependencies": {
+            "abbrev": {
+              "version": "1.0.4",
+              "from": "abbrev@1.0.4"
+            }
+          }
+        },
+        "findup-sync": {
+          "version": "0.1.2",
+          "from": "findup-sync@0.1.2",
+          "dependencies": {
+            "glob": {
+              "version": "3.1.21",
+              "from": "glob@3.1.21",
+              "dependencies": {
+                "minimatch": {
+                  "version": "0.2.11",
+                  "from": "minimatch@0.2.11",
+                  "dependencies": {
+                    "lru-cache": {
+                      "version": "2.3.0",
+                      "from": "lru-cache@2.3.0"
+                    },
+                    "sigmund": {
+                      "version": "1.0.0",
+                      "from": "sigmund@1.0.0"
+                    }
+                  }
+                },
+                "graceful-fs": {
+                  "version": "1.2.0",
+                  "from": "graceful-fs@1.2.0"
+                },
+                "inherits": {
+                  "version": "1.0.0",
+                  "from": "inherits@1.0.0"
+                }
+              }
+            },
+            "lodash": {
+              "version": "1.0.1",
+              "from": "lodash@1.0.1"
+            }
+          }
+        }
+      }
+    },
+    "grunt-contrib-jshint": {
+      "version": "0.3.0",
+      "from": "grunt-contrib-jshint@0.3.0",
+      "dependencies": {
+        "jshint": {
+          "version": "1.1.0",
+          "from": "jshint@1.1.0",
+          "dependencies": {
+            "esprima": {
+              "version": "1.1.0-dev",
+              "from": "https://github.com/ariya/esprima/tarball/master",
+              "resolved": "https://github.com/ariya/esprima/tarball/master"
+            },
+            "shelljs": {
+              "version": "0.1.2",
+              "from": "shelljs@0.1.2"
+            },
+            "underscore": {
+              "version": "1.4.4",
+              "from": "underscore@1.4.4"
+            },
+            "peakle": {
+              "version": "0.0.1",
+              "from": "peakle@0.0.1"
+            },
+            "cli": {
+              "version": "0.4.4-2",
+              "from": "cli@0.4.4-2",
+              "dependencies": {
+                "glob": {
+                  "version": "3.1.21",
+                  "from": "glob@3.1.21",
+                  "dependencies": {
+                    "graceful-fs": {
+                      "version": "1.2.0",
+                      "from": "graceful-fs@1.2.0"
+                    },
+                    "inherits": {
+                      "version": "1.0.0",
+                      "from": "inherits@1.0.0"
+                    }
+                  }
+                }
+              }
+            },
+            "minimatch": {
+              "version": "0.2.11",
+              "from": "minimatch@0.2.11",
+              "dependencies": {
+                "lru-cache": {
+                  "version": "2.3.0",
+                  "from": "lru-cache@2.3.0"
+                },
+                "sigmund": {
+                  "version": "1.0.0",
+                  "from": "sigmund@1.0.0"
+                }
+              }
+            }
+          }
         }
       }
     }
