@@ -3,14 +3,14 @@
   "repo": "codeactual/bdd-flow",
   "description": "Build and run BDD flows with before/after hooks, describe, it",
   "version": "0.1.0",
-  "keywords": [
-  ],
+  "keywords": [],
   "dependencies": {
-    "visionmedia/configurable.js": "f87ca5f"
+    "visionmedia/configurable.js": "f87ca5f",
+    "codeactual/extend": "0.1.0",
+    "component/bind": "9a55368",
+    "visionmedia/batch": "0.3.2"
   },
-  "development": {
-    "codeactual/sinon-doublist": "0.2.3"
-  },
+  "development": {},
   "scripts": [
     "index.js"
   ],
