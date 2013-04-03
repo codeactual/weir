@@ -33,7 +33,6 @@ function Bddflow() {
     done: noOp,
     concurrency: 1
   };
-
   this.batch = new Batch();
 }
 
@@ -43,14 +42,16 @@ configurable(Bddflow.prototype);
  */
 Bddflow.prototype.run = function() {
   var name = this.get('name');
-  var d = new Describe(name);
-  d.describe(name, this.get('initDescribe'));
-  runArrayOfFn(d.__steps, this.get('done'), this.get('concurrency'));
+  var desc = new Describe(name);
+  desc.describe(name, this.get('initDescribe'));
+  runArrayOfFn(desc.__steps, this.get('done'), this.get('concurrency'));
 };
 
 /**
  * Builds an object whose properties are a sub-set of 'this'.
  * That subset is based on property names and contextOmitRegex.
+ *
+ * Static used in other classes via call(). Exposed for test access.
  *
  * @return {object}
  */
@@ -69,6 +70,8 @@ Bddflow.getInheritableContext = function() {
  * Augment 'this' with a new non-enumerable/configrable property intended
  * for internal-use only. Helps avoid conflicts with "inherited" contexts.
  *
+ * Static used in other classes via call(). Exposed for test access.
+ *
  * @param {string} key
  * @param {mixed} value
  */
@@ -81,6 +84,8 @@ Bddflow.addInternalProp = function(key, value) {
 
 /**
  * Getter for properties added via addInternalProp().
+ *
+ * Static used in other classes via call(). Exposed for test access.
  *
  * @param {string} key
  * @return {mixed}
@@ -114,44 +119,24 @@ function HookSet() {
 }
 
 /**
- *  Construct an it() context.
+ * Construct an it() context.
  *
- *  @param {string} name
+ * @param {string} name // Ex. 'shoul do X'
  */
 function It(name) {
-  /**
-   * Name of expected behavior (ex. should X).
-   * @property
-   * @type string
-   */
   this.__name = name;
 }
 It.prototype.get = Bddflow.getInternalProp;
 
 /**
  * Construct a describe() context.
+ *
+ * @param {string} name Subject expected to exhibit some behavior.
  */
 function Describe(name) {
-  /**
-   * Name of subject expected to exhibit some behavior.
-   * @property
-   * @type string
-   */
   this.__name = name;
-
-  /**
-   * describe() and it() callbacks. Each is Batch#push compat.
-   * @property
-   * @type array
-   */
-  this.__steps = [];
-
-  /**
-   * HookSet instance.
-   * @property
-   * @type object
-   */
-  this.__hooks = new HookSet();
+  this.__steps = []; // describe() and it() callbacks, Batch#push compat
+  this.__hooks = new HookSet(); // before*/after* for this subject
 }
 Describe.prototype.getInheritableContext = Bddflow.getInheritableContext;
 
@@ -174,46 +159,42 @@ Describe.prototype.it = function(name, cb) {
  */
 Describe.prototype.describe = function(name, cb) {
   var self = this;
-  var func = function(done) {
-    // Collect steps nested in the given step.
-    var f = new Describe(name);
-    extend(f, self.getInheritableContext());
-    cb.call(f);
+  var step = function(done) {
+    var desc = new Describe(name); // Collect nested steps.
+    extend(desc, self.getInheritableContext());
+    cb.call(desc);
 
-    // Prep a context with the AOP methods.
-    var a = new HookContext(name);
-
+    var hc = new HookContext(name);
     var batch = new Batch();
 
     batch.push(function(done) {
-      extend(a, f.getInheritableContext());
-      f.__hooks.before.call(a, function() {
-        extend(f, a.getInheritableContext());
+      extend(hc, desc.getInheritableContext());
+      desc.__hooks.before.call(hc, function() {
+        extend(desc, hc.getInheritableContext());
         done();
       });
     });
 
-    // Bookend each collected it() and describe() inside a beforeEach/afterEach.
-    batch.push(function(done) {
-      f.__steps = f.__steps.map(function(fn) {
+    batch.push(function(done) { // Wrap hooks around each internal describe()/it()
+      desc.__steps = desc.__steps.map(function(fn) {
         if ('describe' === fn.type) {
-          extend(f, a.getInheritableContext());
-          return bind(f, fn);
+          extend(desc, hc.getInheritableContext());
+          return bind(desc, fn);
         }
         return function(done) { // type = 'it'
           var batch = new Batch();
           batch.push(function(done) {
-            extend(a, f.getInheritableContext());
-            f.__hooks.beforeEach.call(a, done);
+            extend(hc, desc.getInheritableContext());
+            desc.__hooks.beforeEach.call(hc, done);
           });
           batch.push(function(done) {
-            var i = new It(name);
-            extend(i, a.getInheritableContext());
-            fn.call(i, done);
+            var it = new It(name);
+            extend(it, hc.getInheritableContext());
+            fn.call(it, done);
           });
           batch.push(function(done) {
-            f.__hooks.afterEach.call(a, function() {
-              extend(f, a.getInheritableContext());
+            desc.__hooks.afterEach.call(hc, function() {
+              extend(desc, hc.getInheritableContext());
               done();
             });
           });
@@ -222,19 +203,19 @@ Describe.prototype.describe = function(name, cb) {
         };
       });
 
-      runArrayOfFn(f.__steps, done);
+      runArrayOfFn(desc.__steps, done);
     });
 
     batch.push(function(done) {
-      extend(a, f.getInheritableContext());
-      f.__hooks.after.call(a, done);
+      extend(hc, desc.getInheritableContext());
+      desc.__hooks.after.call(hc, done);
     });
 
     batch.concurrency = 1;
     batch.end(done);
   };
-  func.type = 'describe';
-  this.__steps.push(func);
+  step.type = 'describe';
+  this.__steps.push(step);
 };
 
 /**
@@ -242,38 +223,28 @@ Describe.prototype.describe = function(name, cb) {
  *
  * @param {function} cb
  */
-Describe.prototype.before = function(cb) {
-  this.__hooks.before = cb;
-};
+Describe.prototype.before = function(cb) { this.__hooks.before = cb; };
 
 /**
  * Override the default no-op beforeEach() hook.
  *
  * @param {function} cb
  */
-Describe.prototype.beforeEach = function(cb) {
-  this.__hooks.beforeEach = cb;
+Describe.prototype.beforeEach = function(cb) { this.__hooks.beforeEach = cb; };
 
-};
 /**
  * Override the default no-op after() hook.
  *
  * @param {function} cb
  */
-Describe.prototype.after = function(cb) {
-  this.__hooks.after = cb;
-};
+Describe.prototype.after = function(cb) { this.__hooks.after = cb; };
 
 /**
  * Override the default no-op afterEach() hook.
  *
  * @param {function} cb
  */
-Describe.prototype.afterEach = function(cb) {
-  this.__hooks.afterEach = cb;
-};
-
-function noOp() {}
+Describe.prototype.afterEach = function(cb) { this.__hooks.afterEach = cb; };
 
 function runArrayOfFn(set, cb, concurrency) {
   var batch = new Batch();
@@ -281,3 +252,5 @@ function runArrayOfFn(set, cb, concurrency) {
   set.forEach(function(fn) { batch.push(fn); });
   batch.end(cb);
 }
+
+function noOp() {}
