@@ -38,17 +38,34 @@ function Bddflow() {
     concurrency: 1
   };
   this.batch = new Batch();
+  this.seedProps = {}; // Will me merged into initial hook/describe/it context.
 }
 
 configurable(Bddflow.prototype);
 
 /**
+ * Run the batched steps.
  */
 Bddflow.prototype.run = function() {
   var name = this.get('name');
   var desc = new Describe(name);
+
+  extend(desc, this.seedProps);
+
   desc.describe(name, this.get('initDescribe'));
   runArrayOfFn(desc.__steps, this.get('done'), this.get('concurrency'));
+};
+
+/**
+ * Add custom property to the initial hook/describe/it context.
+ *
+ * @param {string} key
+ * @param {mixed} val
+ * @return {object} this
+ */
+Bddflow.prototype.addContextProp = function(key, val) {
+  this.seedProps[key] = val;
+  return this;
 };
 
 /**
