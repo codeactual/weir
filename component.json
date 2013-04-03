@@ -1,0 +1,18 @@
+{
+  "name": "bdd-flow",
+  "repo": "codeactual/bdd-flow",
+  "description": "Build and run BDD flows with before/after hooks, describe, it",
+  "version": "0.1.0",
+  "keywords": [
+  ],
+  "dependencies": {
+    "visionmedia/configurable.js": "f87ca5f"
+  },
+  "development": {
+    "codeactual/sinon-doublist": "0.2.3"
+  },
+  "scripts": [
+    "index.js"
+  ],
+  "license": "MIT"
+}
