@@ -14,6 +14,7 @@ module.exports = {
   It: It,
   HookContext: HookContext,
   HookSet: HookSet,
+  create: create,
   require: require // Allow tests to use component-land require.
 };
 
@@ -24,6 +25,10 @@ var extend = require('extend');
 
 // Match properties that should not be 'inherited' between hook/describe/it.
 var contextOmitRegex = /^__|^(it|describe|before|beforeEach|after|afterEach)$/;
+
+function create() {
+  return new Bddflow();
+}
 
 function Bddflow() {
   this.settings = {

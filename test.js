@@ -8,7 +8,7 @@ chai.use(require('sinon-chai'));
 var bddflow = require('./dist/bdd-flow');
 var Bddflow = bddflow.Bddflow;
 
-describe('bddflow', function() {
+describe('Bddflow', function() {
   it('should follow correct execution order', function(testDone) {
     function initDescribe() {
       this.before(function(done) { log.call(this, 'fb'); done(); });
@@ -36,6 +36,8 @@ describe('bddflow', function() {
     }
 
     function log(loc) {
+      // Also verify shared/inherited contexts between hooks/describe/it by using it
+      // to track execution order.
       this.shared = this.shared || [];
       this.shared.push(loc);
     }
@@ -69,3 +71,12 @@ describe('bddflow', function() {
       .run();
   });
 });
+
+describe('bdd-flow', function() {
+  describe('#create()', function() {
+    it('should return new instance', function() {
+      bddflow.create().should.be.instanceOf(Bddflow);
+    });
+  });
+});
+
