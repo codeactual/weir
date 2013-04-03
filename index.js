@@ -22,8 +22,7 @@ var Batch = require('batch');
 var bind = require('bind');
 var extend = require('extend');
 
-// Matching properties are omitted from contexts 'inherited' during
-// transitions like beforeEach() -> it().
+// Match properties that should not be 'inherited' between hook/describe/it.
 var contextOmitRegex = /^__|^(it|describe|before|beforeEach|after|afterEach)$/;
 
 function Bddflow() {
@@ -48,8 +47,8 @@ Bddflow.prototype.run = function() {
 };
 
 /**
- * Builds an object whose properties are a sub-set of 'this'.
- * That subset is based on property names and contextOmitRegex.
+ * Filter 'this' into an object with properties that can be 'inherited'
+ * between hooks/describe/it.
  *
  * Static used in other classes via call(). Exposed for test access.
  *
@@ -68,7 +67,8 @@ Bddflow.getInheritableContext = function() {
 
 /**
  * Augment 'this' with a new non-enumerable/configrable property intended
- * for internal-use only. Helps avoid conflicts with "inherited" contexts.
+ * for internal-use only. Help avoid conflicts with properties 'inherited'
+ * via getInheritableContext().
  *
  * Static used in other classes via call(). Exposed for test access.
  *
@@ -78,31 +78,18 @@ Bddflow.getInheritableContext = function() {
 Bddflow.addInternalProp = function(key, value) {
   Object.defineProperty(
     this, '__' + key,
-    {value: value, enumerable: false, configurable: false}
+    {value: value, enumerable: false, configurable: false, writable: true}
   );
-};
-
-/**
- * Getter for properties added via addInternalProp().
- *
- * Static used in other classes via call(). Exposed for test access.
- *
- * @param {string} key
- * @return {mixed}
- */
-Bddflow.getInternalProp = function(key) {
-  return this['__' + key];
 };
 
 /**
  * Construct before(), beforeEach(), etc.
  *
- * @param {string} name
+ * @param {string} name Of enclosing describe().
  */
 function HookContext(name) {
   Bddflow.addInternalProp.call(this, 'name', name);
 }
-HookContext.prototype.get = Bddflow.getInternalProp;
 HookContext.prototype.getInheritableContext = Bddflow.getInheritableContext;
 
 // Auto-terminating callback for use with Batch#push.
@@ -124,9 +111,8 @@ function HookSet() {
  * @param {string} name // Ex. 'shoul do X'
  */
 function It(name) {
-  this.__name = name;
+  Bddflow.addInternalProp.call(this, 'name', name);
 }
-It.prototype.get = Bddflow.getInternalProp;
 
 /**
  * Construct a describe() context.
@@ -134,9 +120,9 @@ It.prototype.get = Bddflow.getInternalProp;
  * @param {string} name Subject expected to exhibit some behavior.
  */
 function Describe(name) {
-  this.__name = name;
-  this.__steps = []; // describe() and it() callbacks, Batch#push compat
-  this.__hooks = new HookSet(); // before*/after* for this subject
+  Bddflow.addInternalProp.call(this, 'name', name);
+  Bddflow.addInternalProp.call(this, 'steps', []);
+  Bddflow.addInternalProp.call(this, 'hooks', new HookSet());
 }
 Describe.prototype.getInheritableContext = Bddflow.getInheritableContext;
 
@@ -246,10 +232,17 @@ Describe.prototype.after = function(cb) { this.__hooks.after = cb; };
  */
 Describe.prototype.afterEach = function(cb) { this.__hooks.afterEach = cb; };
 
-function runArrayOfFn(set, cb, concurrency) {
+/**
+ * Execute an array of functions w/ Batch.
+ *
+ * @param {array} list
+ * @param {function} cb Called at completion.
+ * @param {number} [concurrency=1]
+ */
+function runArrayOfFn(list, cb, concurrency) {
   var batch = new Batch();
   batch.concurrency = typeof concurrency === 'undefined' ? 1 : concurrency;
-  set.forEach(function(fn) { batch.push(fn); });
+  list.forEach(function(fn) { batch.push(fn); });
   batch.end(cb);
 }
 
