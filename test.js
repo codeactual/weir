@@ -88,15 +88,17 @@ describe('Bddflow', function() {
       prop = this.prop;
     }
 
+    function rootDescribe() {
+      self.initDescribe.call(this, log);
+    }
+
     var self = this;
     var prop = ['first'];
 
     var flow = new Bddflow();
     flow
       .set('done', done.bind(this))
-      .addRootDescribe(this.test.name, function() {
-        self.initDescribe.call(this, log);
-      })
+      .addRootDescribe('subject', rootDescribe)
       .addContextProp('prop', prop)
       .run();
   });
@@ -118,6 +120,15 @@ describe('Bddflow', function() {
       results.push(loc + ':' + typeof this[propName]);
     }
 
+    function rootDescribe() {
+      this.before(function(hookDone) { log.call(this, 'fb', 'it'); hookDone(); });
+      this.describe('d', function() { log.call(this, 'd', '__prop'); });
+      this.after(function(hookDone) { log.call(this, 'fa', 'it' );  hookDone(); });
+      this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'it'); hookDone(); });
+      this.afterEach(function(hookDone) { log.call(this, 'fae', 'it'); hookDone(); });
+      this.it('fi1', function(testDone) { log.call(this, 'fi1', 'it'); testDone(); });
+    }
+
     var self = this;
     var results = [];
 
@@ -125,14 +136,7 @@ describe('Bddflow', function() {
     flow
       .set('done', done.bind(this))
       .addContextProp('__prop', 'foo')
-      .addRootDescribe(this.test.name, function() {
-        this.before(function(hookDone) { log.call(this, 'fb', 'it'); hookDone(); });
-        this.describe('d', function() { log.call(this, 'd', '__prop'); });
-        this.after(function(hookDone) { log.call(this, 'fa', 'it' );  hookDone(); });
-        this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'it'); hookDone(); });
-        this.afterEach(function(hookDone) { log.call(this, 'fae', 'it'); hookDone(); });
-        this.it('fi1', function(testDone) { log.call(this, 'fi1', 'it'); testDone(); });
-      })
+      .addRootDescribe('subject', rootDescribe)
       .run();
   });
 
@@ -153,22 +157,24 @@ describe('Bddflow', function() {
       results.push(loc + ':' + typeof this[propName]);
     }
 
+    function rootDescribe() {
+      this.before(function(hookDone) { log.call(this, 'fb', 'omitted'); hookDone(); });
+      this.describe('d', function() { log.call(this, 'd', 'omitted'); });
+      this.after(function(hookDone) { log.call(this, 'fa', 'omitted' );  hookDone(); });
+      this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'omitted'); hookDone(); });
+      this.afterEach(function(hookDone) { log.call(this, 'fae', 'omitted'); hookDone(); });
+      this.it('fi1', function(testDone) { log.call(this, 'fi1', 'omitted'); testDone(); });
+    }
+
     var self = this;
     var results = [];
 
     var flow = new Bddflow();
     flow
-      .set('done', done.bind(this))
+      .set('done', done)
       .addContextProp('omitted', 'foo')
       .omitContextByRegex('it', /^omitted$/)
-      .addRootDescribe(this.test.name, function() {
-        this.before(function(hookDone) { log.call(this, 'fb', 'omitted'); hookDone(); });
-        this.describe('d', function() { log.call(this, 'd', 'omitted'); });
-        this.after(function(hookDone) { log.call(this, 'fa', 'omitted' );  hookDone(); });
-        this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'omitted'); hookDone(); });
-        this.afterEach(function(hookDone) { log.call(this, 'fae', 'omitted'); hookDone(); });
-        this.it('fi1', function(testDone) { log.call(this, 'fi1', 'omitted'); testDone(); });
-      })
+      .addRootDescribe('subject', rootDescribe)
       .run();
   });
 
@@ -189,23 +195,57 @@ describe('Bddflow', function() {
       results.push(loc + ':' + typeof this[propName]);
     }
 
+    function rootDescribe() {
+      this.before(function(hookDone) { log.call(this, 'fb', 'omitted'); hookDone(); });
+      this.describe('d', function() { log.call(this, 'd', 'omitted'); });
+      this.after(function(hookDone) { log.call(this, 'fa', 'omitted' );  hookDone(); });
+      this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'omitted'); hookDone(); });
+      this.afterEach(function(hookDone) { log.call(this, 'fae', 'omitted'); hookDone(); });
+      this.it('fi1', function(testDone) { log.call(this, 'fi1', 'omitted'); testDone(); });
+    }
+
     var self = this;
     var results = [];
 
     var flow = new Bddflow();
     flow
-      .set('done', done.bind(this))
+      .set('done', done)
       .addContextProp('omitted', 'foo')
       .omitContextByRegex('hook', /^omitted$/)
-      .addRootDescribe(this.test.name, function() {
-        this.before(function(hookDone) { log.call(this, 'fb', 'omitted'); hookDone(); });
-        this.describe('d', function() { log.call(this, 'd', 'omitted'); });
-        this.after(function(hookDone) { log.call(this, 'fa', 'omitted' );  hookDone(); });
-        this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'omitted'); hookDone(); });
-        this.afterEach(function(hookDone) { log.call(this, 'fae', 'omitted'); hookDone(); });
-        this.it('fi1', function(testDone) { log.call(this, 'fi1', 'omitted'); testDone(); });
-      })
+      .addRootDescribe('subject', rootDescribe)
       .run();
+  });
+
+  it('should optionally wrap it() callbacks', function(testDone) {
+    function done() {
+      actualMergedContext.fromIt.should.equal('itProp');
+      actualMergedContext.fromWrap.should.equal('wrapProp');
+      testDone();
+    }
+
+    function itWrap(name, cb) {
+      cb.call(wrapperContext);
+    }
+
+    function rootDescribe() {
+      this.it('expectation', function(testDone) {
+        actualMergedContext = this;
+        testDone();
+      });
+    }
+
+    var wrapperContext = {fromWrap: 'wrapProp'};
+    var actualMergedContext;
+
+    var flow = new Bddflow();
+    flow
+      .set('done', done)
+      .set('itWrap', itWrap)
+      .addContextProp('fromIt', 'itProp')
+      .addRootDescribe('subject', rootDescribe)
+      .run();
+
+    // TODO verify callback receives a context that's a merge of the one from the wrapper and the outer it()
   });
 });
 

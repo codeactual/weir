@@ -25,7 +25,7 @@ var configurable = require('configurable.js');
 var extend = require('extend');
 
 // Match properties that should not be 'inherited' between hook/describe/it.
-var defOmitContextRegex = /^__|^(it|describe|before|beforeEach|after|afterEach)$/;
+var defOmitContextRegex = /^__|^(it|describe|before|beforeEach|after|afterEach|settings|set|get)$/;
 
 // TODO make this a property, not a global
 var initOmitContextRegex = {
@@ -42,7 +42,8 @@ function create() {
 function Bddflow() {
   this.settings = {
     initDescribe: noOp,
-    done: noOp
+    done: noOp,
+    itWrap: null
   };
   this.rootDescribes = [];
   this.batch = new Batch();
@@ -61,6 +62,10 @@ configurable(Bddflow.prototype);
  */
 Bddflow.prototype.addRootDescribe = function(name, cb, context) {
   var desc = new Describe(name);
+  var itWrap = this.get('itWrap');
+  if (itWrap) {
+    desc.set('itWrap', itWrap);
+  }
   desc.describe(name, cb);
   this.rootDescribes.push(desc);
   return this;
@@ -183,7 +188,11 @@ function Describe(name) {
   Bddflow.addInternalProp.call(this, 'name', name);
   Bddflow.addInternalProp.call(this, 'steps', []);
   Bddflow.addInternalProp.call(this, 'hooks', new HookSet());
+  this.settings = {
+    itWrap: defItWrap
+  };
 }
+configurable(Describe.prototype);
 Describe.prototype.getInheritableContext = Bddflow.getInheritableContext;
 
 /**
@@ -243,7 +252,11 @@ Describe.prototype.describe = function(name, cb) {
             extend(it, desc.getInheritableContext('it'));
             extend(it, hc.getInheritableContext('it'));
 
-            fn.call(it, done);
+            self.get('itWrap')(name, function() {
+              var wrapContext = this;
+              var mergedContext = extend(it, wrapContext);
+              fn.call(mergedContext, done);
+            });
           });
           batch.push(function(done) {
             desc.__hooks.afterEach.call(hc, function() {
@@ -314,3 +327,4 @@ function runArrayOfFn(list, cb, concurrency) {
 }
 
 function noOp() {}
+function defItWrap(name, cb) { cb(); }
