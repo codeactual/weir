@@ -257,6 +257,39 @@ describe('Bddflow', function() {
       .addRootDescribe('subject', rootDescribe)
       .run();
   });
+
+  it('should store describe() and it() names', function(testDone) {
+    function done() {
+      results.should.deep.equal(['r', 'd', 'i2', 'i1']);
+      testDone();
+    }
+
+    function log() {
+      results.push(this.__name);
+    }
+
+    function rootDescribe() {
+      log.call(this);
+      this.describe('d', function() {
+        log.call(this);
+        this.it('i2', function() { log.call(this); });
+      });
+      this.it('i1', function() { log.call(this); });
+    }
+
+    var self = this;
+    var results = [];
+
+    var flow = new Bddflow();
+    flow
+      .set('done', done)
+      .addRootDescribe('r', rootDescribe)
+      .run();
+  });
+
+  it('should optionally filter it() execution by name', function(testDone) {
+    console.log('\x1B[33m<---------- INCOMPLETE'); testDone();
+  });
 });
 
 describe('bdd-flow', function() {

@@ -11,7 +11,8 @@
 module.exports = {
   Bddflow: Bddflow,
   Describe: Describe,
-  It: It,
+  DescribeCallback: DescribeCallback,
+  ItCallback: ItCallback,
   HookContext: HookContext,
   HookSet: HookSet,
   create: create,
@@ -82,7 +83,7 @@ Bddflow.prototype.run = function() {
   this.rootDescribes.forEach(function(desc) {
     batch.push(function(taskDone) {
       extend(desc, self.seedProps);
-      runArrayOfFn(desc.__steps, taskDone, 1);
+      runSteps(desc.__steps, taskDone);
     });
   });
   batch.end(this.get('done'));
@@ -172,7 +173,7 @@ HookContext.prototype.getInheritableContext = Bddflow.getInheritableContext;
 Bddflow.defaultHookImpl = function(done) { done(); };
 
 /**
- * Construct a container for a before(), beforeEach(), etc. method set.
+ * Container for a before(), beforeEach(), etc. method set.
  */
 function HookSet() {
   this.before = Bddflow.defaultHookImpl;
@@ -182,16 +183,16 @@ function HookSet() {
 }
 
 /**
- * Construct an it() context.
- *
- * @param {string} name // Ex. 'shoul do X'
+ * @param {string} name Subject expectation.
+ * @param {string} name Test subject.
  */
-function It(name) {
+function ItCallback(name, cb) {
   Bddflow.addInternalProp.call(this, 'name', name);
+  this.cb = cb;
 }
 
 /**
- * Construct a describe() context.
+ * describe() properties, internal hooks, and nested steps (describe/it).
  *
  * @param {string} name Subject expected to exhibit some behavior.
  */
@@ -213,8 +214,7 @@ Describe.prototype.getInheritableContext = Bddflow.getInheritableContext;
  * @param {function} cb Batch#push compat.
  */
 Describe.prototype.it = function(name, cb) {
-  cb.type = 'it';
-  this.__steps.push(cb);
+  this.__steps.push(new ItCallback(name, cb));
 };
 
 /**
@@ -252,12 +252,12 @@ Describe.prototype.describe = function(name, cb) {
     });
 
     batch.push(function(done) { // Wrap hooks around each internal describe()/it()
-      desc.__steps = desc.__steps.map(function(fn) {
-        if ('describe' === fn.type) {
+      desc.__steps = desc.__steps.map(function(step) {
+        if (step instanceof DescribeCallback) {
           extend(desc, hc.getInheritableContext());
-          return bind(desc, fn);
+          return new DescribeCallback(step.__name, bind(desc, step.cb));
         }
-        return function(done) { // type = 'it'
+        return new DescribeCallback(step.__name, function(done) { // instanceof ItCallback
           var batch = new Batch();
           batch.push(function(done) {
             extend(hc, desc.getInheritableContext('hook'));
@@ -274,23 +274,24 @@ Describe.prototype.describe = function(name, cb) {
             }
           });
           batch.push(function(done) {
-            var it = new It(name);
+            var itContext = {};
 
             // Start with context inherited from outer describe().
             // Then merge in changes/additions from the hooks.
             // If only the hook context is used, hook-targeted omission
             // strip some desired props from the describe().
-            extend(it, desc.getInheritableContext('it'));
-            extend(it, hc.getInheritableContext('it'));
+            extend(itContext, desc.getInheritableContext('it'));
+            extend(itContext, hc.getInheritableContext('it'));
+            itContext.__name = step.__name;
 
             var itWrap = self.get('bddFlowConfig').itWrap || defItWrap;
-            itWrap(name, function() {
+            itWrap(step.__name, function() {
               var wrapContext = this;
-              var mergedContext = extend(it, wrapContext);
-              if (fn.length) { // Custom afterEach() expects callback arg.
-                fn.call(mergedContext, done);
+              var mergedContext = extend(itContext, wrapContext);
+              if (step.cb.length) { // Custom afterEach() expects callback arg.
+                step.cb.call(mergedContext, done);
               } else {
-                fn.call(mergedContext);
+                step.cb.call(mergedContext);
                 done();
               }
             });
@@ -310,10 +311,10 @@ Describe.prototype.describe = function(name, cb) {
           });
           batch.concurrency = 1;
           batch.end(done);
-        };
+        });
       });
 
-      runArrayOfFn(desc.__steps, done);
+      runSteps(desc.__steps, done);
     });
 
     batch.push(function(done) {
@@ -334,8 +335,7 @@ Describe.prototype.describe = function(name, cb) {
     batch.concurrency = 1;
     batch.end(done);
   };
-  step.type = 'describe';
-  this.__steps.push(step);
+  this.__steps.push(new DescribeCallback(name, step));
 };
 
 /**
@@ -367,16 +367,25 @@ Describe.prototype.after = function(cb) { this.__hooks.after = cb; };
 Describe.prototype.afterEach = function(cb) { this.__hooks.afterEach = cb; };
 
 /**
+ * @param {string} name Test subject.
+ * @param {function} cb
+ */
+function DescribeCallback(name, cb) {
+  Bddflow.addInternalProp.call(this, 'name', name);
+  this.cb = cb;
+}
+
+/**
  * Execute an array of functions w/ Batch.
  *
- * @param {array} list
+ * @param {array} steps
  * @param {function} cb Called at completion.
  * @param {number} [concurrency=1]
  */
-function runArrayOfFn(list, cb, concurrency) {
+function runSteps(steps, cb) {
   var batch = new Batch();
-  batch.concurrency = typeof concurrency === 'undefined' ? 1 : concurrency;
-  list.forEach(function(fn) { batch.push(fn); });
+  batch.concurrency = 1;
+  steps.forEach(function(step) { batch.push(step.cb); });
   batch.end(cb);
 }
 
