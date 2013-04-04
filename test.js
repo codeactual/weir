@@ -218,8 +218,10 @@ describe('Bddflow', function() {
 
   it('should optionally wrap it() callbacks', function(testDone) {
     function done() {
-      actualMergedContext.fromIt.should.equal('itProp');
-      actualMergedContext.fromWrap.should.equal('wrapProp');
+      actualMergedContext.topLevel.fromIt.should.equal('itProp');
+      actualMergedContext.topLevel.fromWrap.should.equal('wrapProp');
+      actualMergedContext.nested.fromIt.should.equal('itProp');
+      actualMergedContext.nested.fromWrap.should.equal('wrapProp');
       testDone();
     }
 
@@ -229,13 +231,23 @@ describe('Bddflow', function() {
 
     function rootDescribe() {
       this.it('expectation', function(testDone) {
-        actualMergedContext = this;
+        actualMergedContext.topLevel = this;
         testDone();
+      });
+
+      this.describe('nested subject', function() {
+        this.it('expectation', function(testDone) {
+          actualMergedContext.nested = this;
+          testDone();
+        });
       });
     }
 
     var wrapperContext = {fromWrap: 'wrapProp'};
-    var actualMergedContext;
+    var actualMergedContext = {
+      topLevel: undefined,
+      nested: undefined
+    };
 
     var flow = new Bddflow();
     flow
@@ -244,8 +256,6 @@ describe('Bddflow', function() {
       .addContextProp('fromIt', 'itProp')
       .addRootDescribe('subject', rootDescribe)
       .run();
-
-    // TODO verify callback receives a context that's a merge of the one from the wrapper and the outer it()
   });
 });
 

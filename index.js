@@ -62,10 +62,7 @@ configurable(Bddflow.prototype);
  */
 Bddflow.prototype.addRootDescribe = function(name, cb, context) {
   var desc = new Describe(name);
-  var itWrap = this.get('itWrap');
-  if (itWrap) {
-    desc.set('itWrap', itWrap);
-  }
+  desc.set('itWrap', this.get('itWrap'));
   desc.describe(name, cb);
   this.rootDescribes.push(desc);
   return this;
@@ -189,7 +186,7 @@ function Describe(name) {
   Bddflow.addInternalProp.call(this, 'steps', []);
   Bddflow.addInternalProp.call(this, 'hooks', new HookSet());
   this.settings = {
-    itWrap: defItWrap
+    itWrap: null
   };
 }
 configurable(Describe.prototype);
@@ -216,6 +213,7 @@ Describe.prototype.describe = function(name, cb) {
   var self = this;
   var step = function(done) {
     var desc = new Describe(name); // Collect nested steps.
+    desc.set('itWrap', self.get('itWrap'));
     extend(desc, self.getInheritableContext());
     cb.call(desc);
 
@@ -252,7 +250,8 @@ Describe.prototype.describe = function(name, cb) {
             extend(it, desc.getInheritableContext('it'));
             extend(it, hc.getInheritableContext('it'));
 
-            self.get('itWrap')(name, function() {
+            var itWrap = self.get('itWrap') || defItWrap;
+            itWrap(name, function() {
               var wrapContext = this;
               var mergedContext = extend(it, wrapContext);
               fn.call(mergedContext, done);
