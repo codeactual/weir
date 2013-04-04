@@ -41,8 +41,9 @@ function create() {
 
 function Bddflow() {
   this.settings = {
-    initDescribe: noOp,
-    done: noOp,
+    done: noOp, // Batch#end callback that fires after flow completes.
+
+    // Propagate to each new Describe instance:
     itWrap: null
   };
   this.rootDescribes = [];
@@ -51,6 +52,7 @@ function Bddflow() {
 
   omitContextRegex = clone(initOmitContextRegex); // TODO refactor
 }
+Bddflow.describeConfigKeys = ['itWrap'];
 
 configurable(Bddflow.prototype);
 
@@ -61,8 +63,15 @@ configurable(Bddflow.prototype);
  * @param {function} cb
  */
 Bddflow.prototype.addRootDescribe = function(name, cb, context) {
+  var self = this;
   var desc = new Describe(name);
-  desc.set('itWrap', this.get('itWrap'));
+
+  var bddFlowConfig = {}; // Propagate selected settings.
+  Bddflow.describeConfigKeys.forEach(function(key) {
+    bddFlowConfig[key] = self.get(key);
+  });
+  desc.set('bddFlowConfig', bddFlowConfig);
+
   desc.describe(name, cb);
   this.rootDescribes.push(desc);
   return this;
@@ -186,7 +195,7 @@ function Describe(name) {
   Bddflow.addInternalProp.call(this, 'steps', []);
   Bddflow.addInternalProp.call(this, 'hooks', new HookSet());
   this.settings = {
-    itWrap: null
+    bddFlowConfig: {}
   };
 }
 configurable(Describe.prototype);
@@ -213,7 +222,7 @@ Describe.prototype.describe = function(name, cb) {
   var self = this;
   var step = function(done) {
     var desc = new Describe(name); // Collect nested steps.
-    desc.set('itWrap', self.get('itWrap'));
+    desc.set('bddFlowConfig', self.get('bddFlowConfig'));
     extend(desc, self.getInheritableContext());
     cb.call(desc);
 
@@ -250,7 +259,7 @@ Describe.prototype.describe = function(name, cb) {
             extend(it, desc.getInheritableContext('it'));
             extend(it, hc.getInheritableContext('it'));
 
-            var itWrap = self.get('itWrap') || defItWrap;
+            var itWrap = self.get('bddFlowConfig').itWrap || defItWrap;
             itWrap(name, function() {
               var wrapContext = this;
               var mergedContext = extend(it, wrapContext);
