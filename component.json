@@ -8,7 +8,8 @@
     "visionmedia/configurable.js": "f87ca5f",
     "codeactual/extend": "0.1.0",
     "component/bind": "9a55368",
-    "visionmedia/batch": "0.3.2"
+    "visionmedia/batch": "0.3.2",
+    "component/clone": "0.1.0"
   },
   "development": {},
   "scripts": [

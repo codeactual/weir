@@ -18,21 +18,22 @@ module.exports = {
   require: require // Allow tests to use component-land require.
 };
 
-var configurable = require('configurable.js');
 var Batch = require('batch');
 var bind = require('bind');
+var clone = require('clone');
+var configurable = require('configurable.js');
 var extend = require('extend');
 
 // Match properties that should not be 'inherited' between hook/describe/it.
 var defOmitContextRegex = /^__|^(it|describe|before|beforeEach|after|afterEach)$/;
 
 // TODO make this a property, not a global
-var omitContextRegex = {
+var initOmitContextRegex = {
   all: [defOmitContextRegex],
-  describe: [],
   it: [],
   hook: []
 };
+var omitContextRegex;
 
 function create() {
   return new Bddflow();
@@ -46,6 +47,8 @@ function Bddflow() {
   this.rootDescribes = [];
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
+
+  omitContextRegex = clone(initOmitContextRegex); // TODO refactor
 }
 
 configurable(Bddflow.prototype);
@@ -93,6 +96,7 @@ Bddflow.prototype.addContextProp = function(key, val) {
 
 Bddflow.prototype.omitContextByRegex = function(type, regex) {
   omitContextRegex[type].push(regex);
+  return this;
 };
 
 /**
@@ -106,7 +110,7 @@ Bddflow.prototype.omitContextByRegex = function(type, regex) {
  */
 Bddflow.getInheritableContext = function(type) {
   var self = this;
-  var regex = omitContextRegex.all.concat(omitContextRegex[type]);
+  var regex = omitContextRegex.all.concat(type ? omitContextRegex[type] : []);
 
   return Object.keys(this).reduce(function(memo, key) {
     var omit = false;
@@ -203,16 +207,16 @@ Describe.prototype.describe = function(name, cb) {
   var self = this;
   var step = function(done) {
     var desc = new Describe(name); // Collect nested steps.
-    extend(desc, self.getInheritableContext('all'));
+    extend(desc, self.getInheritableContext());
     cb.call(desc);
 
     var hc = new HookContext(name);
     var batch = new Batch();
 
     batch.push(function(done) {
-      extend(hc, desc.getInheritableContext('all'));
+      extend(hc, desc.getInheritableContext('hook'));
       desc.__hooks.before.call(hc, function() {
-        extend(desc, hc.getInheritableContext('all'));
+        extend(desc, hc.getInheritableContext('hook'));
         done();
       });
     });
@@ -220,23 +224,30 @@ Describe.prototype.describe = function(name, cb) {
     batch.push(function(done) { // Wrap hooks around each internal describe()/it()
       desc.__steps = desc.__steps.map(function(fn) {
         if ('describe' === fn.type) {
-          extend(desc, hc.getInheritableContext('all'));
+          extend(desc, hc.getInheritableContext());
           return bind(desc, fn);
         }
         return function(done) { // type = 'it'
           var batch = new Batch();
           batch.push(function(done) {
-            extend(hc, desc.getInheritableContext('all'));
+            extend(hc, desc.getInheritableContext('hook'));
             desc.__hooks.beforeEach.call(hc, done);
           });
           batch.push(function(done) {
             var it = new It(name);
-            extend(it, hc.getInheritableContext('all'));
+
+            // Start with context inherited from outer describe().
+            // Then merge in changes/additions from the hooks.
+            // If only the hook context is used, hook-targeted omission
+            // strip some desired props from the describe().
+            extend(it, desc.getInheritableContext('it'));
+            extend(it, hc.getInheritableContext('it'));
+
             fn.call(it, done);
           });
           batch.push(function(done) {
             desc.__hooks.afterEach.call(hc, function() {
-              extend(desc, hc.getInheritableContext('all'));
+              extend(desc, hc.getInheritableContext('hook'));
               done();
             });
           });
@@ -249,7 +260,7 @@ Describe.prototype.describe = function(name, cb) {
     });
 
     batch.push(function(done) {
-      extend(hc, desc.getInheritableContext('all'));
+      extend(hc, desc.getInheritableContext('hook'));
       desc.__hooks.after.call(hc, done);
     });
 

@@ -102,12 +102,6 @@ describe('Bddflow', function() {
   });
 
   it('should omit default context props from all', function(testDone) {
-    // describe
-    // it
-    // before
-    // beforeEach
-    // after
-    // afterEach
     function done() {
       results.should.deep.equal([
         'fb:undefined',
@@ -142,20 +136,76 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should omit context props from describe()', function(testDone) {
-    console.log('\x1B[33m<---------- INCOMPLETE'); testDone();
-  });
-
   it('should omit context props from it()', function(testDone) {
-    console.log('\x1B[33m<---------- INCOMPLETE'); testDone();
+    function done() {
+      results.should.deep.equal([
+        'fb:string',
+        'd:string',
+        'fbe:string',
+        'fi1:undefined',
+        'fae:string',
+        'fa:string'
+      ]);
+      testDone();
+    }
+
+    function log(loc, propName) {
+      results.push(loc + ':' + typeof this[propName]);
+    }
+
+    var self = this;
+    var results = [];
+
+    var flow = new Bddflow();
+    flow
+      .set('done', done.bind(this))
+      .addContextProp('omitted', 'foo')
+      .omitContextByRegex('it', /^omitted$/)
+      .addRootDescribe(this.test.name, function() {
+        this.before(function(hookDone) { log.call(this, 'fb', 'omitted'); hookDone(); });
+        this.describe('d', function() { log.call(this, 'd', 'omitted'); });
+        this.after(function(hookDone) { log.call(this, 'fa', 'omitted' );  hookDone(); });
+        this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'omitted'); hookDone(); });
+        this.afterEach(function(hookDone) { log.call(this, 'fae', 'omitted'); hookDone(); });
+        this.it('fi1', function(testDone) { log.call(this, 'fi1', 'omitted'); testDone(); });
+      })
+      .run();
   });
 
   it('should omit context props from hooks', function(testDone) {
-    // before
-    // beforeEach
-    // after
-    // afterEach
-    console.log('\x1B[33m<---------- INCOMPLETE'); testDone();
+    function done() {
+      results.should.deep.equal([
+        'fb:undefined',
+        'd:string',
+        'fbe:undefined',
+        'fi1:string',
+        'fae:undefined',
+        'fa:undefined'
+      ]);
+      testDone();
+    }
+
+    function log(loc, propName) {
+      results.push(loc + ':' + typeof this[propName]);
+    }
+
+    var self = this;
+    var results = [];
+
+    var flow = new Bddflow();
+    flow
+      .set('done', done.bind(this))
+      .addContextProp('omitted', 'foo')
+      .omitContextByRegex('hook', /^omitted$/)
+      .addRootDescribe(this.test.name, function() {
+        this.before(function(hookDone) { log.call(this, 'fb', 'omitted'); hookDone(); });
+        this.describe('d', function() { log.call(this, 'd', 'omitted'); });
+        this.after(function(hookDone) { log.call(this, 'fa', 'omitted' );  hookDone(); });
+        this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'omitted'); hookDone(); });
+        this.afterEach(function(hookDone) { log.call(this, 'fae', 'omitted'); hookDone(); });
+        this.it('fi1', function(testDone) { log.call(this, 'fi1', 'omitted'); testDone(); });
+      })
+      .run();
   });
 });
 
