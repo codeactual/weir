@@ -43,13 +43,14 @@ function Bddflow() {
     // Propagate to each new Describe instance:
     itWrap: null,
     omitContextRegex: clone(defOmitContextRegex),
-    path: [] // Names of ancestor describe levels to the currently executing it().
+    path: [], // Names of ancestor describe levels to the currently executing it().
+    grep: /.?/ // Filters it() execution by "current path + it() name".
   };
   this.rootDescribes = [];
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
 }
-Bddflow.sharedConfigKeys = ['itWrap', 'omitContextRegex', 'path'];
+Bddflow.sharedConfigKeys = ['itWrap', 'omitContextRegex', 'path', 'grep'];
 
 configurable(Bddflow.prototype);
 
@@ -260,6 +261,12 @@ Describe.prototype.describe = function(name, cb) {
           extend(desc, hc.getInheritableContext());
           return new DescribeCallback(step.__name, bind(desc, step.cb));
         }
+
+        var itPath = bddFlowConfig.path.concat(step.__name);
+        if (!bddFlowConfig.grep.test(itPath)) {
+          return new ItCallback(step.__name, batchNoOp);
+        }
+
         return new DescribeCallback(step.__name, function(done) { // instanceof ItCallback
           var batch = new Batch();
           batch.push(function(done) {
@@ -286,7 +293,7 @@ Describe.prototype.describe = function(name, cb) {
             extend(itContext, desc.getInheritableContext('it'));
             extend(itContext, hc.getInheritableContext('it'));
             itContext.__name = step.__name;
-            itContext.__path = bddFlowConfig.path.concat(step.__name);
+            itContext.__path = itPath;
 
             var itWrap = self.get('bddFlowConfig').itWrap || defItWrap;
             itWrap(step.__name, function() {
@@ -394,4 +401,5 @@ function runSteps(steps, cb) {
 }
 
 function noOp() {}
+function batchNoOp(taskDone) { taskDone(); }
 function defItWrap(name, cb) { cb(); }

@@ -8,6 +8,9 @@ chai.use(require('sinon-chai'));
 var bddflow = require('./dist/bdd-flow');
 var Bddflow = bddflow.Bddflow;
 
+var requireComponent = bddflow.require;
+var Batch = requireComponent('batch');
+
 describe('Bddflow', function() {
   beforeEach(function() {
     this.expectedOrder = [
@@ -322,7 +325,86 @@ describe('Bddflow', function() {
   });
 
   it('should optionally filter it() execution by BDD path', function(testDone) {
-    console.log('\x1B[33m<---------- INCOMPLETE'); testDone();
+    function log(loc) {
+      results.push(loc);
+    }
+
+    function rootDescribe() {
+      this.describe('d', function() {
+        this.it('i2', function() { log.call(this, 'i2'); });
+        this.describe('d2', function() {
+          this.it('i3', function() { log.call(this, 'i3'); });
+        });
+      });
+      this.it('i1', function() { log.call(this, 'i1'); });
+    }
+
+    var self = this;
+    var results;
+
+    var batch = new Batch();
+
+    batch.push(function(taskDone) {
+      results = [];
+      var flow = new Bddflow();
+      flow
+        .set('grep', /i1/)
+        .set('done', function done() {
+          results.should.deep.equal(['i1']);
+          taskDone();
+        })
+        .addRootDescribe('r', rootDescribe)
+        .run();
+    });
+    batch.push(function(taskDone) {
+      results = [];
+      var flow = new Bddflow();
+      flow
+        .set('grep', /i2/)
+        .set('done', function done() {
+          results.should.deep.equal(['i2']);
+          taskDone();
+        })
+        .addRootDescribe('r', rootDescribe)
+        .run();
+    });
+    batch.push(function(taskDone) {
+      results = [];
+      var flow = new Bddflow();
+      flow
+        .set('grep', /d2/)
+        .set('done', function done() {
+          results.should.deep.equal(['i3']);
+          taskDone();
+        })
+        .addRootDescribe('r', rootDescribe)
+        .run();
+    });
+    batch.push(function(taskDone) {
+      results = [];
+      var flow = new Bddflow();
+      flow
+        .set('grep', /d/)
+        .set('done', function done() {
+          results.should.deep.equal(['i2', 'i3']);
+          taskDone();
+        })
+        .addRootDescribe('r', rootDescribe)
+        .run();
+    });
+    batch.push(function(taskDone) {
+      results = [];
+      var flow = new Bddflow();
+      flow
+        .set('grep', /r/)
+        .set('done', function done() {
+          results.should.deep.equal(['i2', 'i3', 'i1']);
+          taskDone();
+        })
+        .addRootDescribe('r', rootDescribe)
+        .run();
+    });
+    batch.end(testDone);
   });
 });
 
