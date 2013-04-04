@@ -100,7 +100,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should omit default context props from all', function(testDone) {
+  it('should apply default context property omission regex', function(testDone) {
     var self = this;
     var results = [];
 
@@ -118,7 +118,7 @@ describe('Bddflow', function() {
         this.afterEach(function() { log.call(this, 'ae', 'it'); });
         this.it('i1', function() { log.call(this, 'i1', 'it'); });
       })
-      .set('done', function() {
+      .set('done', function() { // No flow function should see '__prop' due to /^__/
         results.should.deep.equal([
           'b:undefined',
           'd:undefined',
@@ -140,16 +140,18 @@ describe('Bddflow', function() {
       results.push(loc + ':' + typeof this[propName]);
     }
 
+    var prop = 'it-cant-see-me';
+
     this.flow
-      .addContextProp('omitted', 'foo')
-      .omitContextByRegex('it', /^omitted$/)
+      .addContextProp(prop, 'foo')
+      .omitContextByRegex('it', new RegExp('^' + prop + '$'))
       .addRootDescribe('subject', function() {
-        this.before(function() { log.call(this, 'b', 'omitted'); });
-        this.describe('d', function() { log.call(this, 'd', 'omitted'); });
-        this.after(function() { log.call(this, 'a', 'omitted' );  });
-        this.beforeEach(function() { log.call(this, 'be', 'omitted'); });
-        this.afterEach(function() { log.call(this, 'ae', 'omitted'); });
-        this.it('i1', function() { log.call(this, 'i1', 'omitted'); });
+        this.before(function() { log.call(this, 'b', prop); });
+        this.describe('d', function() { log.call(this, 'd', prop); });
+        this.after(function() { log.call(this, 'a', prop );  });
+        this.beforeEach(function() { log.call(this, 'be', prop); });
+        this.afterEach(function() { log.call(this, 'ae', prop); });
+        this.it('i1', function() { log.call(this, 'i1', prop); });
       })
       .set('done', function() {
         results.should.deep.equal([
@@ -173,16 +175,18 @@ describe('Bddflow', function() {
       results.push(loc + ':' + typeof this[propName]);
     }
 
+    var prop = 'hooks-cant-see-me';
+
     this.flow
-      .addContextProp('omitted', 'foo')
-      .omitContextByRegex('hook', /^omitted$/)
+      .addContextProp(prop, 'foo')
+      .omitContextByRegex('hook', new RegExp('^' + prop + '$'))
       .addRootDescribe('subject', function() {
-        this.before(function() { log.call(this, 'b', 'omitted'); });
-        this.describe('d', function() { log.call(this, 'd', 'omitted'); });
-        this.after(function() { log.call(this, 'a', 'omitted' );  });
-        this.beforeEach(function() { log.call(this, 'be', 'omitted'); });
-        this.afterEach(function() { log.call(this, 'ae', 'omitted'); });
-        this.it('i1', function() { log.call(this, 'i1', 'omitted'); });
+        this.before(function() { log.call(this, 'b', prop); });
+        this.describe('d', function() { log.call(this, 'd', prop); });
+        this.after(function() { log.call(this, 'a', prop );  });
+        this.beforeEach(function() { log.call(this, 'be', prop); });
+        this.afterEach(function() { log.call(this, 'ae', prop); });
+        this.it('i1', function() { log.call(this, 'i1', prop); });
       })
       .set('done', function() {
         results.should.deep.equal([
