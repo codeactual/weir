@@ -31,17 +31,17 @@ describe('Bddflow', function() {
     ];
 
     this.initDescribe = function(log) {
-      this.before(function(done) { log.call(this, 'fb'); done(); });
-      this.after(function(done) { log.call(this, 'fa');  done(); });
-      this.beforeEach(function(done) { log.call(this, 'fbe'); done(); });
-      this.afterEach(function(done) { log.call(this, 'fae'); done(); });
+      this.before(function(hookDone) { log.call(this, 'fb'); hookDone(); });
+      this.after(function(hookDone) { log.call(this, 'fa');  hookDone(); });
+      this.beforeEach(function(hookDone) { log.call(this, 'fbe'); hookDone(); });
+      this.afterEach(function(hookDone) { log.call(this, 'fae'); hookDone(); });
       this.it('fi1', function(testDone) { log.call(this, 'fi1'); testDone(); });
       this.it('fi2', function(testDone) { log.call(this, 'fi2'); testDone(); });
       this.describe('d1', function() {
-        this.before(function(done) { log.call(this, 'd1b'); done(); });
-        this.after(function(done) { log.call(this, 'd1a'); done(); });
-        this.beforeEach(function(done) { log.call(this, 'd1be'); done(); });
-        this.afterEach(function(done) { log.call(this, 'd1ae'); done(); });
+        this.before(function(hookDone) { log.call(this, 'd1b'); hookDone(); });
+        this.after(function(hookDone) { log.call(this, 'd1a'); hookDone(); });
+        this.beforeEach(function(hookDone) { log.call(this, 'd1be'); hookDone(); });
+        this.afterEach(function(hookDone) { log.call(this, 'd1ae'); hookDone(); });
         this.it('d1i1', function(testDone) { log.call(this, 'd1i1'); testDone(); });
         this.it('d1i2', function(testDone) { log.call(this, 'd1i2'); testDone(); });
         this.describe('d1a', function() {
@@ -77,7 +77,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should let client seed context properties', function(testDone) {
+  it('should seed context properties', function(testDone) {
     function done() {
       prop.should.deep.equal(['first'].concat(this.expectedOrder));
       testDone();
@@ -99,6 +99,63 @@ describe('Bddflow', function() {
       })
       .addContextProp('prop', prop)
       .run();
+  });
+
+  it('should omit default context props from all', function(testDone) {
+    // describe
+    // it
+    // before
+    // beforeEach
+    // after
+    // afterEach
+    function done() {
+      results.should.deep.equal([
+        'fb:undefined',
+        'd:undefined',
+        'fbe:undefined',
+        'fi1:undefined',
+        'fae:undefined',
+        'fa:undefined'
+      ]);
+      testDone();
+    }
+
+    function log(loc, propName) {
+      results.push(loc + ':' + typeof this[propName]);
+    }
+
+    var self = this;
+    var results = [];
+
+    var flow = new Bddflow();
+    flow
+      .set('done', done.bind(this))
+      .addContextProp('__prop', 'foo')
+      .addRootDescribe(this.test.name, function() {
+        this.before(function(hookDone) { log.call(this, 'fb', 'it'); hookDone(); });
+        this.describe('d', function() { log.call(this, 'd', '__prop'); });
+        this.after(function(hookDone) { log.call(this, 'fa', 'it' );  hookDone(); });
+        this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'it'); hookDone(); });
+        this.afterEach(function(hookDone) { log.call(this, 'fae', 'it'); hookDone(); });
+        this.it('fi1', function(testDone) { log.call(this, 'fi1', 'it'); testDone(); });
+      })
+      .run();
+  });
+
+  it('should omit context props from describe()', function(testDone) {
+    console.log('\x1B[33m<---------- INCOMPLETE'); testDone();
+  });
+
+  it('should omit context props from it()', function(testDone) {
+    console.log('\x1B[33m<---------- INCOMPLETE'); testDone();
+  });
+
+  it('should omit context props from hooks', function(testDone) {
+    // before
+    // beforeEach
+    // after
+    // afterEach
+    console.log('\x1B[33m<---------- INCOMPLETE'); testDone();
   });
 });
 

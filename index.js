@@ -24,7 +24,15 @@ var bind = require('bind');
 var extend = require('extend');
 
 // Match properties that should not be 'inherited' between hook/describe/it.
-var contextOmitRegex = /^__|^(it|describe|before|beforeEach|after|afterEach)$/;
+var defOmitContextRegex = /^__|^(it|describe|before|beforeEach|after|afterEach)$/;
+
+// TODO make this a property, not a global
+var omitContextRegex = {
+  all: [defOmitContextRegex],
+  describe: [],
+  it: [],
+  hook: []
+};
 
 function create() {
   return new Bddflow();
@@ -48,7 +56,7 @@ configurable(Bddflow.prototype);
  * @param {string} name
  * @param {function} cb
  */
-Bddflow.prototype.addRootDescribe = function(name, cb) {
+Bddflow.prototype.addRootDescribe = function(name, cb, context) {
   var desc = new Describe(name);
   desc.describe(name, cb);
   this.rootDescribes.push(desc);
@@ -83,18 +91,29 @@ Bddflow.prototype.addContextProp = function(key, val) {
   return this;
 };
 
+Bddflow.prototype.omitContextByRegex = function(type, regex) {
+  omitContextRegex[type].push(regex);
+};
+
 /**
  * Filter 'this' into an object with properties that can be 'inherited'
  * between hooks/describe/it.
  *
  * Static used in other classes via call(). Exposed for test access.
  *
+ * @param {string} type 'describe', 'it', 'hook'
  * @return {object}
  */
-Bddflow.getInheritableContext = function() {
+Bddflow.getInheritableContext = function(type) {
   var self = this;
+  var regex = omitContextRegex.all.concat(omitContextRegex[type]);
+
   return Object.keys(this).reduce(function(memo, key) {
-    if (contextOmitRegex.test(key)) {
+    var omit = false;
+    regex.forEach(function(re) {
+      omit = omit || re.test(key);
+    });
+    if (omit) {
       return memo;
     }
     memo[key] = self[key];
@@ -105,7 +124,7 @@ Bddflow.getInheritableContext = function() {
 /**
  * Augment 'this' with a new non-enumerable/configrable property intended
  * for internal-use only. Help avoid conflicts with properties 'inherited'
- * via getInheritableContext().
+ * via getInheritableContext.
  *
  * Static used in other classes via call(). Exposed for test access.
  *
@@ -184,16 +203,16 @@ Describe.prototype.describe = function(name, cb) {
   var self = this;
   var step = function(done) {
     var desc = new Describe(name); // Collect nested steps.
-    extend(desc, self.getInheritableContext());
+    extend(desc, self.getInheritableContext('all'));
     cb.call(desc);
 
     var hc = new HookContext(name);
     var batch = new Batch();
 
     batch.push(function(done) {
-      extend(hc, desc.getInheritableContext());
+      extend(hc, desc.getInheritableContext('all'));
       desc.__hooks.before.call(hc, function() {
-        extend(desc, hc.getInheritableContext());
+        extend(desc, hc.getInheritableContext('all'));
         done();
       });
     });
@@ -201,23 +220,23 @@ Describe.prototype.describe = function(name, cb) {
     batch.push(function(done) { // Wrap hooks around each internal describe()/it()
       desc.__steps = desc.__steps.map(function(fn) {
         if ('describe' === fn.type) {
-          extend(desc, hc.getInheritableContext());
+          extend(desc, hc.getInheritableContext('all'));
           return bind(desc, fn);
         }
         return function(done) { // type = 'it'
           var batch = new Batch();
           batch.push(function(done) {
-            extend(hc, desc.getInheritableContext());
+            extend(hc, desc.getInheritableContext('all'));
             desc.__hooks.beforeEach.call(hc, done);
           });
           batch.push(function(done) {
             var it = new It(name);
-            extend(it, hc.getInheritableContext());
+            extend(it, hc.getInheritableContext('all'));
             fn.call(it, done);
           });
           batch.push(function(done) {
             desc.__hooks.afterEach.call(hc, function() {
-              extend(desc, hc.getInheritableContext());
+              extend(desc, hc.getInheritableContext('all'));
               done();
             });
           });
@@ -230,7 +249,7 @@ Describe.prototype.describe = function(name, cb) {
     });
 
     batch.push(function(done) {
-      extend(hc, desc.getInheritableContext());
+      extend(hc, desc.getInheritableContext('all'));
       desc.__hooks.after.call(hc, done);
     });
 
