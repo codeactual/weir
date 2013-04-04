@@ -287,7 +287,41 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should optionally filter it() execution by name', function(testDone) {
+  it('should track BDD path', function(testDone) {
+    function done() {
+      results.should.deep.equal([
+        ['r', 'd', 'i2'],
+        ['r', 'd', 'd2', 'i3'],
+        ['r', 'i1']
+      ]);
+      testDone();
+    }
+
+    function log(loc) {
+      results.push(this.__path);
+    }
+
+    function rootDescribe() {
+      this.describe('d', function() {
+        this.it('i2', function() { log.call(this, 'i2'); });
+        this.describe('d2', function() {
+          this.it('i3', function() { log.call(this, 'i3'); });
+        });
+      });
+      this.it('i1', function() { log.call(this, 'i1'); });
+    }
+
+    var self = this;
+    var results = [];
+
+    var flow = new Bddflow();
+    flow
+      .set('done', done)
+      .addRootDescribe('r', rootDescribe)
+      .run();
+  });
+
+  it('should optionally filter it() execution by BDD path', function(testDone) {
     console.log('\x1B[33m<---------- INCOMPLETE'); testDone();
   });
 });
