@@ -24,16 +24,12 @@ var clone = require('clone');
 var configurable = require('configurable.js');
 var extend = require('extend');
 
-// Match properties that should not be 'inherited' between hook/describe/it.
-var defOmitContextRegex = /^__|^(it|describe|before|beforeEach|after|afterEach|settings|set|get)$/;
-
-// TODO make this a property, not a global
-var initOmitContextRegex = {
-  all: [defOmitContextRegex],
+// Match properties that should not be 'inherited' by it(), hooks, or all.
+var defOmitContextRegex = {
+  all: [/^__|^(it|describe|before|beforeEach|after|afterEach|settings|set|get)$/],
   it: [],
   hook: []
 };
-var omitContextRegex;
 
 function create() {
   return new Bddflow();
@@ -44,15 +40,14 @@ function Bddflow() {
     done: noOp, // Batch#end callback that fires after flow completes.
 
     // Propagate to each new Describe instance:
-    itWrap: null
+    itWrap: null,
+    omitContextRegex: clone(defOmitContextRegex)
   };
   this.rootDescribes = [];
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
-
-  omitContextRegex = clone(initOmitContextRegex); // TODO refactor
 }
-Bddflow.describeConfigKeys = ['itWrap'];
+Bddflow.sharedConfigKeys = ['itWrap', 'omitContextRegex'];
 
 configurable(Bddflow.prototype);
 
@@ -67,7 +62,7 @@ Bddflow.prototype.addRootDescribe = function(name, cb, context) {
   var desc = new Describe(name);
 
   var bddFlowConfig = {}; // Propagate selected settings.
-  Bddflow.describeConfigKeys.forEach(function(key) {
+  Bddflow.sharedConfigKeys.forEach(function(key) {
     bddFlowConfig[key] = self.get(key);
   });
   desc.set('bddFlowConfig', bddFlowConfig);
@@ -105,8 +100,16 @@ Bddflow.prototype.addContextProp = function(key, val) {
   return this;
 };
 
+/**
+ * Prevent a type of flow function from 'inheriting' specific context properties
+ * from enclosing/subsequently-executed flow functions.
+ *
+ * @param {string} 'it', 'hook'
+ * @param {object} RegExp instance.
+ * @return {object} this
+ */
 Bddflow.prototype.omitContextByRegex = function(type, regex) {
-  omitContextRegex[type].push(regex);
+  this.get('omitContextRegex')[type].push(regex);
   return this;
 };
 
@@ -121,6 +124,7 @@ Bddflow.prototype.omitContextByRegex = function(type, regex) {
  */
 Bddflow.getInheritableContext = function(type) {
   var self = this;
+  var omitContextRegex = this.get('bddFlowConfig').omitContextRegex;
   var regex = omitContextRegex.all.concat(type ? omitContextRegex[type] : []);
 
   return Object.keys(this).reduce(function(memo, key) {
@@ -161,6 +165,7 @@ Bddflow.addInternalProp = function(key, value) {
 function HookContext(name) {
   Bddflow.addInternalProp.call(this, 'name', name);
 }
+configurable(HookContext.prototype);
 HookContext.prototype.getInheritableContext = Bddflow.getInheritableContext;
 
 // Auto-terminating callback for use with Batch#push.
@@ -227,6 +232,8 @@ Describe.prototype.describe = function(name, cb) {
     cb.call(desc);
 
     var hc = new HookContext(name);
+    hc.set('bddFlowConfig', self.get('bddFlowConfig'));
+
     var batch = new Batch();
 
     batch.push(function(done) {
