@@ -18,13 +18,22 @@ module.exports = {
   require: require // Allow tests to use component-land require.
 };
 
-var configurable = require('configurable.js');
 var Batch = require('batch');
 var bind = require('bind');
+var clone = require('clone');
+var configurable = require('configurable.js');
 var extend = require('extend');
 
 // Match properties that should not be 'inherited' between hook/describe/it.
-var contextOmitRegex = /^__|^(it|describe|before|beforeEach|after|afterEach)$/;
+var defOmitContextRegex = /^__|^(it|describe|before|beforeEach|after|afterEach|settings|set|get)$/;
+
+// TODO make this a property, not a global
+var initOmitContextRegex = {
+  all: [defOmitContextRegex],
+  it: [],
+  hook: []
+};
+var omitContextRegex;
 
 function create() {
   return new Bddflow();
@@ -33,11 +42,14 @@ function create() {
 function Bddflow() {
   this.settings = {
     initDescribe: noOp,
-    done: noOp
+    done: noOp,
+    itWrap: null
   };
   this.rootDescribes = [];
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
+
+  omitContextRegex = clone(initOmitContextRegex); // TODO refactor
 }
 
 configurable(Bddflow.prototype);
@@ -48,8 +60,12 @@ configurable(Bddflow.prototype);
  * @param {string} name
  * @param {function} cb
  */
-Bddflow.prototype.addRootDescribe = function(name, cb) {
+Bddflow.prototype.addRootDescribe = function(name, cb, context) {
   var desc = new Describe(name);
+  var itWrap = this.get('itWrap');
+  if (itWrap) {
+    desc.set('itWrap', itWrap);
+  }
   desc.describe(name, cb);
   this.rootDescribes.push(desc);
   return this;
@@ -83,18 +99,30 @@ Bddflow.prototype.addContextProp = function(key, val) {
   return this;
 };
 
+Bddflow.prototype.omitContextByRegex = function(type, regex) {
+  omitContextRegex[type].push(regex);
+  return this;
+};
+
 /**
  * Filter 'this' into an object with properties that can be 'inherited'
  * between hooks/describe/it.
  *
  * Static used in other classes via call(). Exposed for test access.
  *
+ * @param {string} type 'describe', 'it', 'hook'
  * @return {object}
  */
-Bddflow.getInheritableContext = function() {
+Bddflow.getInheritableContext = function(type) {
   var self = this;
+  var regex = omitContextRegex.all.concat(type ? omitContextRegex[type] : []);
+
   return Object.keys(this).reduce(function(memo, key) {
-    if (contextOmitRegex.test(key)) {
+    var omit = false;
+    regex.forEach(function(re) {
+      omit = omit || re.test(key);
+    });
+    if (omit) {
       return memo;
     }
     memo[key] = self[key];
@@ -105,7 +133,7 @@ Bddflow.getInheritableContext = function() {
 /**
  * Augment 'this' with a new non-enumerable/configrable property intended
  * for internal-use only. Help avoid conflicts with properties 'inherited'
- * via getInheritableContext().
+ * via getInheritableContext.
  *
  * Static used in other classes via call(). Exposed for test access.
  *
@@ -160,7 +188,11 @@ function Describe(name) {
   Bddflow.addInternalProp.call(this, 'name', name);
   Bddflow.addInternalProp.call(this, 'steps', []);
   Bddflow.addInternalProp.call(this, 'hooks', new HookSet());
+  this.settings = {
+    itWrap: defItWrap
+  };
 }
+configurable(Describe.prototype);
 Describe.prototype.getInheritableContext = Bddflow.getInheritableContext;
 
 /**
@@ -191,9 +223,9 @@ Describe.prototype.describe = function(name, cb) {
     var batch = new Batch();
 
     batch.push(function(done) {
-      extend(hc, desc.getInheritableContext());
+      extend(hc, desc.getInheritableContext('hook'));
       desc.__hooks.before.call(hc, function() {
-        extend(desc, hc.getInheritableContext());
+        extend(desc, hc.getInheritableContext('hook'));
         done();
       });
     });
@@ -207,17 +239,28 @@ Describe.prototype.describe = function(name, cb) {
         return function(done) { // type = 'it'
           var batch = new Batch();
           batch.push(function(done) {
-            extend(hc, desc.getInheritableContext());
+            extend(hc, desc.getInheritableContext('hook'));
             desc.__hooks.beforeEach.call(hc, done);
           });
           batch.push(function(done) {
             var it = new It(name);
-            extend(it, hc.getInheritableContext());
-            fn.call(it, done);
+
+            // Start with context inherited from outer describe().
+            // Then merge in changes/additions from the hooks.
+            // If only the hook context is used, hook-targeted omission
+            // strip some desired props from the describe().
+            extend(it, desc.getInheritableContext('it'));
+            extend(it, hc.getInheritableContext('it'));
+
+            self.get('itWrap')(name, function() {
+              var wrapContext = this;
+              var mergedContext = extend(it, wrapContext);
+              fn.call(mergedContext, done);
+            });
           });
           batch.push(function(done) {
             desc.__hooks.afterEach.call(hc, function() {
-              extend(desc, hc.getInheritableContext());
+              extend(desc, hc.getInheritableContext('hook'));
               done();
             });
           });
@@ -230,7 +273,7 @@ Describe.prototype.describe = function(name, cb) {
     });
 
     batch.push(function(done) {
-      extend(hc, desc.getInheritableContext());
+      extend(hc, desc.getInheritableContext('hook'));
       desc.__hooks.after.call(hc, done);
     });
 
@@ -284,3 +327,4 @@ function runArrayOfFn(list, cb, concurrency) {
 }
 
 function noOp() {}
+function defItWrap(name, cb) { cb(); }
