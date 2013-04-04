@@ -238,10 +238,17 @@ Describe.prototype.describe = function(name, cb) {
 
     batch.push(function(done) {
       extend(hc, desc.getInheritableContext('hook'));
-      desc.__hooks.before.call(hc, function() {
+      function asyncCb() {
         extend(desc, hc.getInheritableContext('hook'));
         done();
-      });
+      }
+      var hook = desc.__hooks.before;
+      if (hook.length) { // Custom before() expects callback arg.
+        desc.__hooks.before.call(hc, asyncCb);
+      } else {
+        desc.__hooks.before.call(hc);
+        asyncCb();
+      }
     });
 
     batch.push(function(done) { // Wrap hooks around each internal describe()/it()
@@ -254,7 +261,17 @@ Describe.prototype.describe = function(name, cb) {
           var batch = new Batch();
           batch.push(function(done) {
             extend(hc, desc.getInheritableContext('hook'));
-            desc.__hooks.beforeEach.call(hc, done);
+            function asyncCb() {
+              extend(desc, hc.getInheritableContext('hook'));
+              done();
+            }
+            var hook = desc.__hooks.beforeEach;
+            if (hook.length) { // Custom beforeEach() expects callback arg.
+              desc.__hooks.beforeEach.call(hc, asyncCb);
+            } else {
+              desc.__hooks.beforeEach.call(hc);
+              asyncCb();
+            }
           });
           batch.push(function(done) {
             var it = new It(name);
@@ -270,14 +287,26 @@ Describe.prototype.describe = function(name, cb) {
             itWrap(name, function() {
               var wrapContext = this;
               var mergedContext = extend(it, wrapContext);
-              fn.call(mergedContext, done);
+              if (fn.length) { // Custom afterEach() expects callback arg.
+                fn.call(mergedContext, done);
+              } else {
+                fn.call(mergedContext);
+                done();
+              }
             });
           });
           batch.push(function(done) {
-            desc.__hooks.afterEach.call(hc, function() {
+            function asyncCb() {
               extend(desc, hc.getInheritableContext('hook'));
               done();
-            });
+            }
+            var hook = desc.__hooks.afterEach;
+            if (hook.length) { // Custom afterEach() expects callback arg.
+              desc.__hooks.afterEach.call(hc, asyncCb);
+            } else {
+              desc.__hooks.afterEach.call(hc);
+              asyncCb();
+            }
           });
           batch.concurrency = 1;
           batch.end(done);
@@ -289,7 +318,17 @@ Describe.prototype.describe = function(name, cb) {
 
     batch.push(function(done) {
       extend(hc, desc.getInheritableContext('hook'));
-      desc.__hooks.after.call(hc, done);
+      function asyncCb() {
+        extend(desc, hc.getInheritableContext('hook'));
+        done();
+      }
+      var hook = desc.__hooks.after;
+      if (hook.length) { // Custom after() expects callback arg.
+        desc.__hooks.after.call(hc, asyncCb);
+      } else {
+        desc.__hooks.after.call(hc);
+        asyncCb();
+      }
     });
 
     batch.concurrency = 1;

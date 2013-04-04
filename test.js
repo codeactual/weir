@@ -31,21 +31,21 @@ describe('Bddflow', function() {
     ];
 
     this.initDescribe = function(log) {
-      this.before(function(hookDone) { log.call(this, 'fb'); hookDone(); });
-      this.after(function(hookDone) { log.call(this, 'fa');  hookDone(); });
-      this.beforeEach(function(hookDone) { log.call(this, 'fbe'); hookDone(); });
-      this.afterEach(function(hookDone) { log.call(this, 'fae'); hookDone(); });
-      this.it('fi1', function(testDone) { log.call(this, 'fi1'); testDone(); });
-      this.it('fi2', function(testDone) { log.call(this, 'fi2'); testDone(); });
+      this.before(function() { log.call(this, 'fb'); });
+      this.after(function() { log.call(this, 'fa');  });
+      this.beforeEach(function() { log.call(this, 'fbe'); });
+      this.afterEach(function() { log.call(this, 'fae'); });
+      this.it('fi1', function() { log.call(this, 'fi1'); });
+      this.it('fi2', function() { log.call(this, 'fi2'); });
       this.describe('d1', function() {
-        this.before(function(hookDone) { log.call(this, 'd1b'); hookDone(); });
-        this.after(function(hookDone) { log.call(this, 'd1a'); hookDone(); });
-        this.beforeEach(function(hookDone) { log.call(this, 'd1be'); hookDone(); });
-        this.afterEach(function(hookDone) { log.call(this, 'd1ae'); hookDone(); });
-        this.it('d1i1', function(testDone) { log.call(this, 'd1i1'); testDone(); });
-        this.it('d1i2', function(testDone) { log.call(this, 'd1i2'); testDone(); });
+        this.before(function() { log.call(this, 'd1b'); });
+        this.after(function() { log.call(this, 'd1a'); });
+        this.beforeEach(function() { log.call(this, 'd1be'); });
+        this.afterEach(function() { log.call(this, 'd1ae'); });
+        this.it('d1i1', function() { log.call(this, 'd1i1'); });
+        this.it('d1i2', function() { log.call(this, 'd1i2'); });
         this.describe('d1a', function() {
-          this.it('d1ai1', function(testDone) { log.call(this, 'd1ai1'); testDone(); });
+          this.it('d1ai1', function() { log.call(this, 'd1ai1'); });
         });
       });
     };
@@ -121,12 +121,12 @@ describe('Bddflow', function() {
     }
 
     function rootDescribe() {
-      this.before(function(hookDone) { log.call(this, 'fb', 'it'); hookDone(); });
+      this.before(function() { log.call(this, 'fb', 'it'); });
       this.describe('d', function() { log.call(this, 'd', '__prop'); });
-      this.after(function(hookDone) { log.call(this, 'fa', 'it' );  hookDone(); });
-      this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'it'); hookDone(); });
-      this.afterEach(function(hookDone) { log.call(this, 'fae', 'it'); hookDone(); });
-      this.it('fi1', function(testDone) { log.call(this, 'fi1', 'it'); testDone(); });
+      this.after(function() { log.call(this, 'fa', 'it' );  });
+      this.beforeEach(function() { log.call(this, 'fbe', 'it'); });
+      this.afterEach(function() { log.call(this, 'fae', 'it'); });
+      this.it('fi1', function() { log.call(this, 'fi1', 'it'); });
     }
 
     var self = this;
@@ -158,12 +158,12 @@ describe('Bddflow', function() {
     }
 
     function rootDescribe() {
-      this.before(function(hookDone) { log.call(this, 'fb', 'omitted'); hookDone(); });
+      this.before(function() { log.call(this, 'fb', 'omitted'); });
       this.describe('d', function() { log.call(this, 'd', 'omitted'); });
-      this.after(function(hookDone) { log.call(this, 'fa', 'omitted' );  hookDone(); });
-      this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'omitted'); hookDone(); });
-      this.afterEach(function(hookDone) { log.call(this, 'fae', 'omitted'); hookDone(); });
-      this.it('fi1', function(testDone) { log.call(this, 'fi1', 'omitted'); testDone(); });
+      this.after(function() { log.call(this, 'fa', 'omitted' );  });
+      this.beforeEach(function() { log.call(this, 'fbe', 'omitted'); });
+      this.afterEach(function() { log.call(this, 'fae', 'omitted'); });
+      this.it('fi1', function() { log.call(this, 'fi1', 'omitted'); });
     }
 
     var self = this;
@@ -196,12 +196,12 @@ describe('Bddflow', function() {
     }
 
     function rootDescribe() {
-      this.before(function(hookDone) { log.call(this, 'fb', 'omitted'); hookDone(); });
+      this.before(function() { log.call(this, 'fb', 'omitted'); });
       this.describe('d', function() { log.call(this, 'd', 'omitted'); });
-      this.after(function(hookDone) { log.call(this, 'fa', 'omitted' );  hookDone(); });
-      this.beforeEach(function(hookDone) { log.call(this, 'fbe', 'omitted'); hookDone(); });
-      this.afterEach(function(hookDone) { log.call(this, 'fae', 'omitted'); hookDone(); });
-      this.it('fi1', function(testDone) { log.call(this, 'fi1', 'omitted'); testDone(); });
+      this.after(function() { log.call(this, 'fa', 'omitted' );  });
+      this.beforeEach(function() { log.call(this, 'fbe', 'omitted'); });
+      this.afterEach(function() { log.call(this, 'fae', 'omitted'); });
+      this.it('fi1', function() { log.call(this, 'fi1', 'omitted'); });
     }
 
     var self = this;
