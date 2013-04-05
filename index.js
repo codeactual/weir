@@ -32,10 +32,11 @@ var defOmitContextRegex = {
   hook: []
 };
 
-function create() {
-  return new Bddflow();
-}
+function create() { return new Bddflow(); }
 
+/**
+ * Flow configuration and execution.
+ */
 function Bddflow() {
   this.settings = {
     done: noOp, // Batch#end callback that fires after flow completes.
@@ -55,12 +56,12 @@ Bddflow.sharedConfigKeys = ['itWrap', 'omitContextRegex', 'path', 'grep'];
 configurable(Bddflow.prototype);
 
 /**
- * Add a "root" describe().
+ * Add a top-level describe().
  *
  * @param {string} name
  * @param {function} cb
  */
-Bddflow.prototype.addRootDescribe = function(name, cb, context) {
+Bddflow.prototype.addRootDescribe = function(name, cb) {
   var self = this;
   var desc = new Describe(name);
 
@@ -161,7 +162,7 @@ Bddflow.addInternalProp = function(key, value) {
 };
 
 /**
- * Construct before(), beforeEach(), etc.
+ * Callback context for before(), beforeEach(), etc.
  *
  * @param {string} name Of enclosing describe().
  */
@@ -194,7 +195,7 @@ function ItCallback(name, cb) {
 }
 
 /**
- * describe() properties, internal hooks, and nested steps (describe/it).
+ * A describe()'s properties, internal hooks, and nested steps (describe/it).
  *
  * @param {string} name Subject expected to exhibit some behavior.
  */
@@ -263,7 +264,7 @@ Describe.prototype.describe = function(name, cb) {
         }
 
         var itPath = bddFlowConfig.path.concat(step.__name);
-        if (!bddFlowConfig.grep.test(itPath)) {
+        if (!bddFlowConfig.grep.test(itPath.join(' '))) {
           return new ItCallback(step.__name, batchNoOp);
         }
 
