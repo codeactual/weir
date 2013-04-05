@@ -18,7 +18,18 @@ Library for building and running BDD flows.
 * [geist](https://github.com/codeactual/geist): Relies on `bdd-flow` for test composition. Injects the standard [CasperJS](http://casperjs.org/) testing API, and custom wrappers, into each `it()`.
 
 ```js
-               ***example test script after bootstrapping enhancement**
+module.exports = function(geist) {
+  geist.set('initUrl', '/login').set('initSel', '.login');
+
+  geist.start('login page', function() {
+    this.describe('form', function() {
+      this.it('should not auto-check "Remember Me"' , function() {
+        this.selectorExists('.remember-me');
+        this.selectorMissing('.remember-me:checked');
+      });
+    });
+  });
+};
 ```
 
 ### API: Basic run
