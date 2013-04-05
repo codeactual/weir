@@ -10,11 +10,6 @@
 
 module.exports = {
   Bddflow: Bddflow,
-  Describe: Describe,
-  DescribeCallback: DescribeCallback,
-  ItCallback: ItCallback,
-  HookContext: HookContext,
-  HookSet: HookSet,
   create: create,
   require: require // Allow tests to use component-land require.
 };
