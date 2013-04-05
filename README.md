@@ -5,7 +5,7 @@ Library for building and running BDD flows.
 * Nested `describe()`
 * Sync or async `it()`
 * `before/beforeEach/after/afterEach` hooks, sync or async
-* Select `it()` execution by regular expression
+* Select/omit `it()` execution by regular expression
 * Assertion library agnostic
 * Manage `it()` and hook contexts with property injection/omission
 
@@ -118,7 +118,8 @@ Optional:
 
 * `{function} done`: Fires after flow completion.
 * `{function} itWrap`: `it()` callbacks will be executed inside this wrapper and "inherit" that context. For example, [conjure](https://github.com/codeactual/conjure) uses it to run every `it()` inside a [CasperJS](http://casperjs.org/) `then()` to inject the latter's API.
-* `{RegExp} grep`: Limit execution to `it()` definitions whose "BDD path" matches the pattern. Example path from a script with nested `describe()` layers: `"my-lib MyClass #myMethod should validate X"`.
+* `{RegExp} grep`: Limit execution to `it()` definitions whose "BDD path" matches the pattern. Example path from a script with nested `describe()` layers: `"my-lib MyClass #myMethod should validate X"`. (Cannot combine with `grepv`.)
+* `{RegExp} grepv`: Limit execution to `it()` definitions whose "BDD path" don't match the pattern. Example path from a script with nested `describe()` layers: `"my-lib MyClass #myMethod should validate X"`. (Cannot combine with `grep`.)
 
 ### `addContextProp(key, val)`
 

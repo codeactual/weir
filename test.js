@@ -292,7 +292,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should optionally filter it() execution by BDD path', function(testDone) {
+  it('should optionally filter it() execution by BDD path regex', function(testDone) {
     var self = this;
     var results;
 
@@ -367,6 +367,89 @@ describe('Bddflow', function() {
         .set('grep', /r/)
         .set('done', function done() {
           results.should.deep.equal(['i2', 'i3', 'i1']);
+          taskDone();
+        })
+        .addRootDescribe('r', rootDescribe)
+        .run();
+    });
+    batch.end(testDone);
+  });
+
+  it('should optionally omit it() execution by BDD path regex', function(testDone) {
+    var self = this;
+    var results;
+
+    function log(loc) {
+      results.push(loc);
+    }
+
+    function rootDescribe() {
+      this.describe('d', function() {
+        this.it('i2', function() { log.call(this, 'i2'); });
+        this.describe('d2', function() {
+          this.it('i3', function() { log.call(this, 'i3'); });
+        });
+      });
+      this.it('i1', function() { log.call(this, 'i1'); });
+    }
+
+    var batch = new Batch();
+
+    batch.push(function(taskDone) {
+      results = [];
+      var flow = bddflow.create();
+      flow
+        .set('grepv', /i1/)
+        .set('done', function done() {
+          results.should.deep.equal(['i2', 'i3']);
+          taskDone();
+        })
+        .addRootDescribe('r', rootDescribe)
+        .run();
+    });
+    batch.push(function(taskDone) {
+      results = [];
+      var flow = bddflow.create();
+      flow
+        .set('grepv', /i2/)
+        .set('done', function done() {
+          results.should.deep.equal(['i3', 'i1']);
+          taskDone();
+        })
+        .addRootDescribe('r', rootDescribe)
+        .run();
+    });
+    batch.push(function(taskDone) {
+      results = [];
+      var flow = bddflow.create();
+      flow
+        .set('grepv', /d2/)
+        .set('done', function done() {
+          results.should.deep.equal(['i2', 'i1']);
+          taskDone();
+        })
+        .addRootDescribe('r', rootDescribe)
+        .run();
+    });
+    batch.push(function(taskDone) {
+      results = [];
+      var flow = bddflow.create();
+      flow
+        .set('grepv', /d/)
+        .set('done', function done() {
+          results.should.deep.equal(['i1']);
+          taskDone();
+        })
+        .addRootDescribe('r', rootDescribe)
+        .run();
+    });
+    batch.push(function(taskDone) {
+      results = [];
+      var flow = bddflow.create();
+      flow
+        .set('grepv', /r/)
+        .set('done', function done() {
+          results.should.deep.equal([]);
           taskDone();
         })
         .addRootDescribe('r', rootDescribe)

@@ -40,13 +40,14 @@ function Bddflow() {
     itWrap: null,
     omitContextRegex: clone(defOmitContextRegex),
     path: [], // Names of ancestor describe levels to the currently executing it().
-    grep: /.?/ // Filters it() execution by "current path + it() name".
+    grep: /.?/, // Filters it() execution by "current path + it() name".
+    grepv: null // Omits it() execution by "current path + it() name".
   };
   this.rootDescribes = [];
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
 }
-Bddflow.sharedConfigKeys = ['itWrap', 'omitContextRegex', 'path', 'grep'];
+Bddflow.sharedConfigKeys = ['itWrap', 'omitContextRegex', 'path', 'grep', 'grepv'];
 
 configurable(Bddflow.prototype);
 
@@ -259,8 +260,14 @@ Describe.prototype.describe = function(name, cb) {
         }
 
         var itPath = bddFlowConfig.path.concat(step.__name);
-        if (!bddFlowConfig.grep.test(itPath.join(' '))) {
-          return new ItCallback(step.__name, batchNoOp);
+        if (bddFlowConfig.grepv) {
+          if (bddFlowConfig.grepv.test(itPath.join(' '))) {
+            return new ItCallback(step.__name, batchNoOp);
+          }
+        } else if (bddFlowConfig.grep) {
+          if (!bddFlowConfig.grep.test(itPath.join(' '))) {
+            return new ItCallback(step.__name, batchNoOp);
+          }
         }
 
         return new DescribeCallback(step.__name, function(done) { // instanceof ItCallback
