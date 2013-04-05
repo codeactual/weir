@@ -15,13 +15,13 @@ Library for building and running BDD flows.
 
 ### Integration
 
-* [geist](https://github.com/codeactual/geist): Relies on `bdd-flow` for test composition. Injects the standard [CasperJS](http://casperjs.org/) testing API, and custom wrappers, into each `it()`.
+* [conjure](https://github.com/codeactual/conjure): Relies on `bdd-flow` for test composition. Injects the standard [CasperJS](http://casperjs.org/) testing API, and custom wrappers, into each `it()`.
 
 ```js
-module.exports = function(geist) {
-  geist.set('initUrl', '/login').set('initSel', '.login');
+module.exports = function(conjure) {
+  conjure.set('initUrl', '/login').set('initSel', '.login');
 
-  geist.start('login page', function() {
+  conjure.test('login page', function() {
     this.describe('form', function() {
       this.it('should not auto-check "Remember Me"' , function() {
         this.selectorExists('.remember-me');
@@ -117,7 +117,7 @@ Optional:
 ### `set(key, val)`
 
 * `{function} done`: Fires after flow completion.
-* `{function} itWrap`: `it()` callbacks will be executed inside this wrapper and "inherit" that context. For example, [geist](https://github.com/codeactual/geist) uses it to run every `it()` inside a [CasperJS](http://casperjs.org/) `then()` to inject the latter's API.
+* `{function} itWrap`: `it()` callbacks will be executed inside this wrapper and "inherit" that context. For example, [conjure](https://github.com/codeactual/conjure) uses it to run every `it()` inside a [CasperJS](http://casperjs.org/) `then()` to inject the latter's API.
 * `{RegExp} grep`: Limit execution to `it()` definitions whose "BDD path" matches the pattern. Example path from a script with nested `describe()` layers: `"my-lib MyClass #myMethod should validate X"`.
 
 ### `addContextProp(key, val)`
