@@ -374,4 +374,26 @@ describe('Bddflow', function() {
     });
     batch.end(testDone);
   });
+
+  it('should support multiple root describes', function(testDone) {
+    var self = this;
+    var actualOrder = [];
+
+    function log(loc) {
+      actualOrder.push(loc);
+    }
+
+    this.flow
+      .addRootDescribe('subject 1', function() {
+        self.defaultDescribe.call(this, log);
+      })
+      .addRootDescribe('subject 2', function() {
+        self.defaultDescribe.call(this, log);
+      })
+      .set('done', function() {
+        actualOrder.should.deep.equal(self.expectedOrder.concat(self.expectedOrder));
+        testDone();
+      })
+      .run();
+  });
 });
