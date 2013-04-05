@@ -281,13 +281,7 @@ Describe.prototype.describe = function(name, cb) {
           });
           batch.push(function(done) {
             var itContext = {};
-
-            // Start with context inherited from outer describe().
-            // Then merge in changes/additions from the hooks.
-            // If only the hook context is used, hook-targeted omission
-            // strip some desired props from the describe().
             extend(itContext, desc.getInheritableContext('it'));
-            extend(itContext, hc.getInheritableContext('it'));
             itContext.__name = step.__name;
             itContext.__path = itPath;
 
