@@ -56,6 +56,18 @@ Bddflow.sharedConfigKeys = ['itWrap', 'omitContextRegex', 'path', 'grep'];
 configurable(Bddflow.prototype);
 
 /**
+ * Add a property to the initial hook/describe/it shared context.
+ *
+ * @param {string} key
+ * @param {mixed} val
+ * @return {object} this
+ */
+Bddflow.prototype.addContextProp = function(key, val) {
+  this.seedProps[key] = val;
+  return this;
+};
+
+/**
  * Add a top-level describe().
  *
  * @param {string} name
@@ -77,7 +89,20 @@ Bddflow.prototype.addRootDescribe = function(name, cb) {
 };
 
 /**
- * Run the batched steps in each root describe().
+ * Prevent a type of flow function from 'inheriting' specific context properties
+ * from enclosing/subsequently-executed flow functions.
+ *
+ * @param {string} 'it', 'hook'
+ * @param {object} RegExp instance.
+ * @return {object} this
+ */
+Bddflow.prototype.hideContextProp = function(type, regex) {
+  this.get('omitContextRegex')[type].push(regex);
+  return this;
+};
+
+/**
+ * Run collected describe() layers.
  */
 Bddflow.prototype.run = function() {
   var self = this;
@@ -90,31 +115,6 @@ Bddflow.prototype.run = function() {
     });
   });
   batch.end(this.get('done'));
-};
-
-/**
- * Add custom property to the initial hook/describe/it context.
- *
- * @param {string} key
- * @param {mixed} val
- * @return {object} this
- */
-Bddflow.prototype.addContextProp = function(key, val) {
-  this.seedProps[key] = val;
-  return this;
-};
-
-/**
- * Prevent a type of flow function from 'inheriting' specific context properties
- * from enclosing/subsequently-executed flow functions.
- *
- * @param {string} 'it', 'hook'
- * @param {object} RegExp instance.
- * @return {object} this
- */
-Bddflow.prototype.omitContextByRegex = function(type, regex) {
-  this.get('omitContextRegex')[type].push(regex);
-  return this;
 };
 
 /**

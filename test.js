@@ -144,7 +144,7 @@ describe('Bddflow', function() {
 
     this.flow
       .addContextProp(prop, 'foo')
-      .omitContextByRegex('it', new RegExp('^' + prop + '$'))
+      .hideContextProp('it', new RegExp('^' + prop + '$'))
       .addRootDescribe('subject', function() {
         this.before(function() { log.call(this, 'b', prop); });
         this.describe('d', function() { log.call(this, 'd', prop); });
@@ -179,7 +179,7 @@ describe('Bddflow', function() {
 
     this.flow
       .addContextProp(prop, 'foo')
-      .omitContextByRegex('hook', new RegExp('^' + prop + '$'))
+      .hideContextProp('hook', new RegExp('^' + prop + '$'))
       .addRootDescribe('subject', function() {
         this.before(function() { log.call(this, 'b', prop); });
         this.describe('d', function() { log.call(this, 'd', prop); });
