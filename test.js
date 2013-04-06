@@ -479,4 +479,18 @@ describe('Bddflow', function() {
       })
       .run();
   });
+
+  it('should track running state', function(testDone) {
+    var self = this;
+
+    this.flow
+      .addRootDescribe('subject 2', function() {})
+      .set('done', function() {
+        self.flow.isRunning().should.equal(true);
+        testDone();
+      });
+
+    this.flow.isRunning().should.equal(false);
+    this.flow.run();
+  });
 });

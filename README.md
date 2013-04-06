@@ -129,6 +129,10 @@ Optional:
 
 > Add a top-level describe().
 
+### `isRunning()`
+
+> Check if run() has been called.
+
 ### `hideContextProp(type, key)`
 
 > Prevent a type of flow function from 'inheriting' specific context properties from enclosing/subsequently-executed flow functions.

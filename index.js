@@ -46,6 +46,7 @@ function Bddflow() {
   this.rootDescribes = [];
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
+  this.running = false;
 }
 Bddflow.sharedConfigKeys = ['itWrap', 'omitContextRegex', 'path', 'grep', 'grepv'];
 
@@ -98,10 +99,22 @@ Bddflow.prototype.hideContextProp = function(type, regex) {
 };
 
 /**
+ * Check if run() has been called.
+ *
+ * @return {boolean}
+ */
+Bddflow.prototype.isRunning = function() {
+  return this.running;
+};
+
+/**
  * Run collected describe() layers.
  */
 Bddflow.prototype.run = function() {
   var self = this;
+
+  this.running = true;
+
   var batch = new Batch();
   batch.concurrency = 1;
   this.rootDescribes.forEach(function(desc) {
