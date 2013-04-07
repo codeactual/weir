@@ -38,6 +38,7 @@ function Bddflow() {
 
     // Propagate to each new Describe instance:
     itWrap: null,
+    describeWrap: null,
     omitContextRegex: clone(defOmitContextRegex),
     path: [], // Names of ancestor describe levels to the currently executing it().
     grep: /.?/, // Filters it() execution by "current path + it() name".
@@ -48,7 +49,9 @@ function Bddflow() {
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
   this.running = false;
 }
-Bddflow.sharedConfigKeys = ['itWrap', 'omitContextRegex', 'path', 'grep', 'grepv'];
+Bddflow.sharedConfigKeys = [
+  'describeWrap', 'itWrap', 'omitContextRegex', 'path', 'grep', 'grepv'
+];
 
 configurable(Bddflow.prototype);
 
@@ -243,7 +246,13 @@ Describe.prototype.describe = function(name, cb) {
     bddFlowConfig.path.push(name);
     desc.set('bddFlowConfig', bddFlowConfig);
     extend(desc, self.getInheritableContext());
-    cb.call(desc);
+
+    var describeWrap = self.get('bddFlowConfig').describeWrap || defDescribeWrap;
+    describeWrap(name, function() {
+      var wrapContext = this;
+      var mergedContext = extend(desc, wrapContext);
+      cb.call(mergedContext);
+    });
 
     var hc = new HookContext(name);
     hc.set('bddFlowConfig', self.get('bddFlowConfig'));
@@ -257,7 +266,7 @@ Describe.prototype.describe = function(name, cb) {
         done();
       }
       var hook = desc.__hooks.before;
-      if (hook.length) { // Custom before() expects callback arg.
+      if (hook.length) { // Expects callback arg.
         desc.__hooks.before.call(hc, asyncCb);
       } else {
         desc.__hooks.before.call(hc);
@@ -292,7 +301,7 @@ Describe.prototype.describe = function(name, cb) {
               done();
             }
             var hook = desc.__hooks.beforeEach;
-            if (hook.length) { // Custom beforeEach() expects callback arg.
+            if (hook.length) { // Expects callback arg.
               desc.__hooks.beforeEach.call(hc, asyncCb);
             } else {
               desc.__hooks.beforeEach.call(hc);
@@ -309,7 +318,7 @@ Describe.prototype.describe = function(name, cb) {
             itWrap(step.__name, function() {
               var wrapContext = this;
               var mergedContext = extend(itContext, wrapContext);
-              if (step.cb.length) { // Custom afterEach() expects callback arg.
+              if (step.cb.length) { // Expects callback arg.
                 step.cb.call(mergedContext, done);
               } else {
                 step.cb.call(mergedContext);
@@ -323,7 +332,7 @@ Describe.prototype.describe = function(name, cb) {
               done();
             }
             var hook = desc.__hooks.afterEach;
-            if (hook.length) { // Custom afterEach() expects callback arg.
+            if (hook.length) { // Expects callback arg.
               desc.__hooks.afterEach.call(hc, asyncCb);
             } else {
               desc.__hooks.afterEach.call(hc);
@@ -345,7 +354,7 @@ Describe.prototype.describe = function(name, cb) {
         done();
       }
       var hook = desc.__hooks.after;
-      if (hook.length) { // Custom after() expects callback arg.
+      if (hook.length) { // Expects callback arg.
         desc.__hooks.after.call(hc, asyncCb);
       } else {
         desc.__hooks.after.call(hc);
@@ -413,3 +422,4 @@ function runSteps(steps, cb) {
 function noOp() {}
 function batchNoOp(taskDone) { taskDone(); }
 function defItWrap(name, cb) { cb(); }
+function defDescribeWrap(name, cb) { cb(); }
