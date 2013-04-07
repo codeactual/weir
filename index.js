@@ -49,7 +49,7 @@ function Bddflow() {
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
   this.running = false;
-  hideEnumerableKeys(this);
+  hideEnumerableProps(this);
 }
 Bddflow.sharedConfigKeys = [
   'describeWrap', 'itWrap', 'omitContextRegex', 'path', 'grep', 'grepv'
@@ -169,13 +169,10 @@ Bddflow.getInheritableContext = function(type) {
  * Static used in other classes via call(). Exposed for test access.
  *
  * @param {string} key
- * @param {mixed} value
+ * @param {mixed} val
  */
-Bddflow.addInternalProp = function(key, value) {
-  Object.defineProperty(
-    this, '__' + key,
-    {value: value, enumerable: false, configurable: false, writable: true}
-  );
+Bddflow.addInternalProp = function(key, val) {
+  addUnenumerableProp(this, '__' + key, val, true);
 };
 
 /**
@@ -188,7 +185,7 @@ function HookContext(name) {
   this.settings = {
     bddFlowConfig: {}
   };
-  hideEnumerableKeys(this);
+  hideEnumerableProps(this);
 }
 configurable(HookContext.prototype);
 HookContext.prototype.getInheritableContext = Bddflow.getInheritableContext;
@@ -227,7 +224,7 @@ function Describe(name) {
   this.settings = {
     bddFlowConfig: {}
   };
-  hideEnumerableKeys(this);
+  hideEnumerableProps(this);
 }
 configurable(Describe.prototype);
 Describe.prototype.getInheritableContext = Bddflow.getInheritableContext;
@@ -270,6 +267,7 @@ Describe.prototype.describe = function(name, cb, isRoot) {
       mergedContext.beforeEach = bind(desc, 'beforeEach');
       mergedContext.after = bind(desc, 'after');
       mergedContext.afterEach = bind(desc, 'afterEach');
+      addUnenumerableProp(mergedContext, '__name', name);
       cb.call(mergedContext);
     });
 
@@ -291,6 +289,7 @@ Describe.prototype.describe = function(name, cb, isRoot) {
         desc.__hooks.before.call(context, asyncCb);
       } else {
         desc.__hooks.before.call(context);
+        extend(hc, context);
         asyncCb();
       }
     });
@@ -333,13 +332,13 @@ Describe.prototype.describe = function(name, cb, isRoot) {
           batch.push(function(done) {
             var itContext = {};
             extend(itContext, desc.getInheritableContext('it'));
-            itContext.__name = step.__name;
-            itContext.__path = itPath;
 
             var itWrap = self.get('bddFlowConfig').itWrap || defItWrap;
             itWrap(step.__name, function() {
               var wrapContext = this;
               var mergedContext = extend(itContext, wrapContext);
+              addUnenumerableProp(mergedContext, '__name', step.__name);
+              addUnenumerableProp(mergedContext, '__path', itPath);
               if (step.cb.length) { // Expects callback arg.
                 step.cb.call(mergedContext, done);
               } else {
@@ -448,8 +447,15 @@ function batchNoOp(taskDone) { taskDone(); }
 function defItWrap(name, cb) { cb(); }
 function defDescribeWrap(name, cb) { cb(); }
 
-function hideEnumerableKeys(obj) {
+function hideEnumerableProps(obj) {
   Object.keys(obj).forEach(function(key) {
     Object.defineProperty(obj, key, {enumerable: false, configurable: false});
   });
+}
+
+function addUnenumerableProp(obj, key, val, writable) {
+  Object.defineProperty(
+    obj, key,
+    {value: val, enumerable: false, configurable: false, writable: !!writable}
+  );
 }

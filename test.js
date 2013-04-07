@@ -100,38 +100,6 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should apply default context property omission regex', function(testDone) {
-    var self = this;
-    var results = [];
-
-    function log(loc, propName) {
-      results.push(loc + ':' + typeof this[propName]);
-    }
-
-    this.flow
-      .addContextProp('__prop', 'foo')
-      .addRootDescribe('subject', function() {
-        this.before(function() { log.call(this, 'b', 'it'); });
-        this.describe('d', function() { log.call(this, 'd', '__prop'); });
-        this.after(function() { log.call(this, 'a', 'it' );  });
-        this.beforeEach(function() { log.call(this, 'be', 'it'); });
-        this.afterEach(function() { log.call(this, 'ae', 'it'); });
-        this.it('i1', function() { log.call(this, 'i1', 'it'); });
-      })
-      .set('done', function() { // No flow function should see '__prop' due to /^__/
-        results.should.deep.equal([
-          'b:undefined',
-          'd:undefined',
-          'be:undefined',
-          'i1:undefined',
-          'ae:undefined',
-          'a:undefined'
-        ]);
-        testDone();
-      })
-      .run();
-  });
-
   it('should omit bdd-flow class props', function(testDone) {
     var self = this;
     var results = [];
@@ -151,20 +119,63 @@ describe('Bddflow', function() {
     this.flow
       .addRootDescribe('subject', function() {
         this.before(function() { log.call(this, 'b'); });
-        this.describe('d', function() { log.call(this, 'd'); });
-        this.after(function() { log.call(this, 'a');  });
         this.beforeEach(function() { log.call(this, 'be'); });
-        this.afterEach(function() { log.call(this, 'ae'); });
         this.it('i1', function() { log.call(this, 'i1'); });
+        this.describe('d', function() { log.call(this, 'd'); });
+        this.afterEach(function() { log.call(this, 'ae'); });
+        this.after(function() { log.call(this, 'a');  });
       })
       .set('done', function() { // No flow function should see '__prop' due to /^__/
         results.should.deep.equal([
           'b:undefined,undefined,undefined,undefined',
-          'd:undefined,undefined,undefined,undefined',
           'be:undefined,undefined,undefined,undefined',
           'i1:undefined,undefined,undefined,undefined',
           'ae:undefined,undefined,undefined,undefined',
+          'd:undefined,undefined,undefined,undefined',
           'a:undefined,undefined,undefined,undefined'
+        ]);
+        testDone();
+      })
+      .run();
+  });
+
+  it('should omit Describe methods non-describe() contexts', function(testDone) {
+    var self = this;
+    var results = [];
+
+    function log(loc, propName) {
+      results.push(
+        loc + ':' +
+        [
+          typeof this.describe,
+          typeof this.it,
+          typeof this.before,
+          typeof this.beforeEach,
+          typeof this.after,
+          typeof this.afterEach
+        ].join(',')
+      );
+    }
+
+    this.flow
+      .addRootDescribe('subject', function() {
+        this.before(function() { log.call(this, 'b'); });
+        this.beforeEach(function() { log.call(this, 'be'); });
+        this.it('i1', function() { log.call(this, 'i1'); });
+        this.describe('d', function() {
+          this.it('i2', function() { log.call(this, 'i2'); });
+        });
+        this.after(function() { log.call(this, 'a');  });
+        this.afterEach(function() { log.call(this, 'ae'); });
+      })
+      .set('done', function() { // No flow function should see '__prop' due to /^__/
+        results.should.deep.equal([
+          'b:undefined,undefined,undefined,undefined,undefined,undefined',
+          'be:undefined,undefined,undefined,undefined,undefined,undefined',
+          'i1:undefined,undefined,undefined,undefined,undefined,undefined',
+          'ae:undefined,undefined,undefined,undefined,undefined,undefined',
+          'i2:undefined,undefined,undefined,undefined,undefined,undefined',
+          'a:undefined,undefined,undefined,undefined,undefined,undefined'
         ]);
         testDone();
       })
