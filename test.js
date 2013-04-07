@@ -65,7 +65,7 @@ describe('Bddflow', function() {
       // to track execution order.
       this.shared = this.shared || [];
       this.shared.push(loc);
-      actualOrder = this.shared;
+      if (loc === 'a') { actualOrder = this.shared; }
     }
 
     this.flow
@@ -100,6 +100,98 @@ describe('Bddflow', function() {
       .run();
   });
 
+  it('should pass context from before() to it()', function(testDone) {
+    var self = this;
+    var results = [];
+
+    function log(loc, propName) {
+      results.push(loc + ':' + this.prop);
+    }
+
+    this.flow
+      .addRootDescribe('subject', function() {
+        this.describe('d', function() {
+          this.before(function() { this.prop = 'foo'; });
+          this.it('i1', function() { log.call(this, 'i1'); });
+        });
+      })
+      .set('done', function() {
+        results.should.deep.equal(['i1:foo']);
+        testDone();
+      })
+      .run();
+  });
+
+  it('should pass context from beforeEach() to it()', function(testDone) {
+    var self = this;
+    var results = [];
+
+    function log(loc, propName) {
+      results.push(loc + ':' + this.prop);
+    }
+
+    this.flow
+      .addRootDescribe('subject', function() {
+        this.describe('d', function() {
+          this.beforeEach(function() { this.prop = 'foo'; });
+          this.it('i1', function() { log.call(this, 'i1'); });
+        });
+      })
+      .set('done', function() {
+        results.should.deep.equal(['i1:foo']);
+        testDone();
+      })
+      .run();
+  });
+
+  it('should pass context from afterEach() to it()', function(testDone) {
+    var self = this;
+    var results = [];
+
+    function log(loc, propName) {
+      results.push(loc + ':' + this.prop);
+    }
+
+    this.flow
+      .addRootDescribe('subject', function() {
+        this.describe('d', function() {
+          this.afterEach(function() { this.prop++; });
+          this.it('i1', function() { this.prop = 1; });
+          this.it('i2', function() { log.call(this, 'i2'); });
+        });
+      })
+      .set('done', function() {
+        results.should.deep.equal(['i2:2']);
+        testDone();
+      })
+      .run();
+  });
+
+  it('should pass context from after() to it()', function(testDone) {
+    var self = this;
+    var results = [];
+
+    function log(loc, propName) {
+      results.push(loc + ':' + this.prop);
+    }
+
+    this.flow
+      .addRootDescribe('subject', function() {
+        this.describe('d', function() {
+          this.after(function() { this.prop++; });
+          this.it('i1', function() { this.prop = 1; });
+        });
+        this.describe('d2', function() {
+          this.it('i2', function() { log.call(this, 'i2'); });
+        });
+      })
+      .set('done', function() {
+        results.should.deep.equal(['i2:2']);
+        testDone();
+      })
+      .run();
+  });
+
   it('should omit bdd-flow class props', function(testDone) {
     var self = this;
     var results = [];
@@ -125,7 +217,7 @@ describe('Bddflow', function() {
         this.afterEach(function() { log.call(this, 'ae'); });
         this.after(function() { log.call(this, 'a');  });
       })
-      .set('done', function() { // No flow function should see '__prop' due to /^__/
+      .set('done', function() {
         results.should.deep.equal([
           'b:undefined,undefined,undefined,undefined',
           'be:undefined,undefined,undefined,undefined',
@@ -168,7 +260,7 @@ describe('Bddflow', function() {
         this.after(function() { log.call(this, 'a');  });
         this.afterEach(function() { log.call(this, 'ae'); });
       })
-      .set('done', function() { // No flow function should see '__prop' due to /^__/
+      .set('done', function() {
         results.should.deep.equal([
           'b:undefined,undefined,undefined,undefined,undefined,undefined',
           'be:undefined,undefined,undefined,undefined,undefined,undefined',
