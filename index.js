@@ -97,6 +97,9 @@ Bddflow.prototype.addRootDescribe = function(name, cb) {
  * @return {object} this
  */
 Bddflow.prototype.hideContextProp = function(type, regex) {
+  if (typeof regex === 'string') {
+    regex = new RegExp('^' + regex + '$');
+  }
   this.get('omitContextRegex')[type].push(regex);
   return this;
 };
