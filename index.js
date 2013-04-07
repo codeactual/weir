@@ -20,11 +20,12 @@ var clone = require('clone');
 var configurable = require('configurable.js');
 var extend = require('extend');
 
-// Match properties that should not be 'inherited' by it(), hooks, or all.
+// Match properties that should not be 'inherited' by it(), hooks, etc.
 var defOmitContextRegex = {
-  all: [/^__|^(it|describe|before|beforeEach|after|afterEach|settings|set|get)$/],
+  describe: [],
+  hook: [],
   it: [],
-  hook: []
+  rootDescribe: []
 };
 
 function create() { return new Bddflow(); }
@@ -48,6 +49,7 @@ function Bddflow() {
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
   this.running = false;
+  hideEnumerableKeys(this);
 }
 Bddflow.sharedConfigKeys = [
   'describeWrap', 'itWrap', 'omitContextRegex', 'path', 'grep', 'grepv'
@@ -83,7 +85,7 @@ Bddflow.prototype.addRootDescribe = function(name, cb) {
   });
   desc.set('bddFlowConfig', bddFlowConfig);
 
-  desc.describe(name, cb);
+  desc.describe(name, cb, true);
   this.rootDescribes.push(desc);
   return this;
 };
@@ -138,13 +140,13 @@ Bddflow.prototype.run = function() {
  *
  * Static used in other classes via call(). Exposed for test access.
  *
- * @param {string} type 'describe', 'it', 'hook'
+ * @param {string} type 'describe', 'hook', 'it', 'rootDescribe'
  * @return {object}
  */
 Bddflow.getInheritableContext = function(type) {
   var self = this;
   var omitContextRegex = this.get('bddFlowConfig').omitContextRegex;
-  var regex = omitContextRegex.all.concat(type ? omitContextRegex[type] : []);
+  var regex = omitContextRegex[type];
 
   return Object.keys(this).reduce(function(memo, key) {
     var omit = false;
@@ -183,6 +185,10 @@ Bddflow.addInternalProp = function(key, value) {
  */
 function HookContext(name) {
   Bddflow.addInternalProp.call(this, 'name', name);
+  this.settings = {
+    bddFlowConfig: {}
+  };
+  hideEnumerableKeys(this);
 }
 configurable(HookContext.prototype);
 HookContext.prototype.getInheritableContext = Bddflow.getInheritableContext;
@@ -221,6 +227,7 @@ function Describe(name) {
   this.settings = {
     bddFlowConfig: {}
   };
+  hideEnumerableKeys(this);
 }
 configurable(Describe.prototype);
 Describe.prototype.getInheritableContext = Bddflow.getInheritableContext;
@@ -241,19 +248,28 @@ Describe.prototype.it = function(name, cb) {
  * @param {string} name
  * @param {function} cb Batch#push compat.
  */
-Describe.prototype.describe = function(name, cb) {
+Describe.prototype.describe = function(name, cb, isRoot) {
   var self = this;
   var step = function(done) {
     var desc = new Describe(name); // Collect nested steps.
     var bddFlowConfig = clone(self.get('bddFlowConfig'));
     bddFlowConfig.path.push(name);
     desc.set('bddFlowConfig', bddFlowConfig);
-    extend(desc, self.getInheritableContext());
+    extend(desc, self.getInheritableContext(isRoot ? 'rootDescribe' : 'describe'));
 
     var describeWrap = self.get('bddFlowConfig').describeWrap || defDescribeWrap;
     describeWrap(name, function() {
       var wrapContext = this;
-      var mergedContext = extend(desc, wrapContext);
+      var mergedContext = extend(
+        desc.getInheritableContext('describe'),
+        wrapContext
+      );
+      mergedContext.describe = bind(desc, 'describe');
+      mergedContext.it = bind(desc, 'it');
+      mergedContext.before = bind(desc, 'before');
+      mergedContext.beforeEach = bind(desc, 'beforeEach');
+      mergedContext.after = bind(desc, 'after');
+      mergedContext.afterEach = bind(desc, 'afterEach');
       cb.call(mergedContext);
     });
 
@@ -269,10 +285,12 @@ Describe.prototype.describe = function(name, cb) {
         done();
       }
       var hook = desc.__hooks.before;
+
+      var context = hc.getInheritableContext('hook');
       if (hook.length) { // Expects callback arg.
-        desc.__hooks.before.call(hc, asyncCb);
+        desc.__hooks.before.call(context, asyncCb);
       } else {
-        desc.__hooks.before.call(hc);
+        desc.__hooks.before.call(context);
         asyncCb();
       }
     });
@@ -280,7 +298,7 @@ Describe.prototype.describe = function(name, cb) {
     batch.push(function(done) { // Wrap hooks around each internal describe()/it()
       desc.__steps = desc.__steps.map(function(step) {
         if (step instanceof DescribeCallback) {
-          extend(desc, hc.getInheritableContext());
+          extend(desc, hc.getInheritableContext('describe'));
           return new DescribeCallback(step.__name, bind(desc, step.cb));
         }
 
@@ -304,10 +322,11 @@ Describe.prototype.describe = function(name, cb) {
               done();
             }
             var hook = desc.__hooks.beforeEach;
+            var context = hc.getInheritableContext('hook');
             if (hook.length) { // Expects callback arg.
-              desc.__hooks.beforeEach.call(hc, asyncCb);
+              desc.__hooks.beforeEach.call(context, asyncCb);
             } else {
-              desc.__hooks.beforeEach.call(hc);
+              desc.__hooks.beforeEach.call(context);
               asyncCb();
             }
           });
@@ -335,10 +354,11 @@ Describe.prototype.describe = function(name, cb) {
               done();
             }
             var hook = desc.__hooks.afterEach;
+            var context = hc.getInheritableContext('hook');
             if (hook.length) { // Expects callback arg.
-              desc.__hooks.afterEach.call(hc, asyncCb);
+              desc.__hooks.afterEach.call(context, asyncCb);
             } else {
-              desc.__hooks.afterEach.call(hc);
+              desc.__hooks.afterEach.call(context);
               asyncCb();
             }
           });
@@ -357,10 +377,11 @@ Describe.prototype.describe = function(name, cb) {
         done();
       }
       var hook = desc.__hooks.after;
+      var context = hc.getInheritableContext('hook');
       if (hook.length) { // Expects callback arg.
-        desc.__hooks.after.call(hc, asyncCb);
+        desc.__hooks.after.call(context, asyncCb);
       } else {
-        desc.__hooks.after.call(hc);
+        desc.__hooks.after.call(context);
         asyncCb();
       }
     });
@@ -426,3 +447,9 @@ function noOp() {}
 function batchNoOp(taskDone) { taskDone(); }
 function defItWrap(name, cb) { cb(); }
 function defDescribeWrap(name, cb) { cb(); }
+
+function hideEnumerableKeys(obj) {
+  Object.keys(obj).forEach(function(key) {
+    Object.defineProperty(obj, key, {enumerable: false, configurable: false});
+  });
+}

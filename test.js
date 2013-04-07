@@ -132,6 +132,45 @@ describe('Bddflow', function() {
       .run();
   });
 
+  it('should omit bdd-flow class props', function(testDone) {
+    var self = this;
+    var results = [];
+
+    function log(loc, propName) {
+      results.push(
+        loc + ':' +
+        [
+          typeof this.running,
+          typeof this.settings,
+          typeof this.set,
+          typeof this.addRootDescribe
+        ].join(',')
+      );
+    }
+
+    this.flow
+      .addRootDescribe('subject', function() {
+        this.before(function() { log.call(this, 'b'); });
+        this.describe('d', function() { log.call(this, 'd'); });
+        this.after(function() { log.call(this, 'a');  });
+        this.beforeEach(function() { log.call(this, 'be'); });
+        this.afterEach(function() { log.call(this, 'ae'); });
+        this.it('i1', function() { log.call(this, 'i1'); });
+      })
+      .set('done', function() { // No flow function should see '__prop' due to /^__/
+        results.should.deep.equal([
+          'b:undefined,undefined,undefined,undefined',
+          'd:undefined,undefined,undefined,undefined',
+          'be:undefined,undefined,undefined,undefined',
+          'i1:undefined,undefined,undefined,undefined',
+          'ae:undefined,undefined,undefined,undefined',
+          'a:undefined,undefined,undefined,undefined'
+        ]);
+        testDone();
+      })
+      .run();
+  });
+
   it('should omit context props from it()', function(testDone) {
     var self = this;
     var results = [];
