@@ -386,7 +386,7 @@ describe('Bddflow', function() {
     var results = [];
 
     function log() {
-      results.push(this.__name);
+      results.push(this.__conjure__name);
     }
 
     this.flow
@@ -410,7 +410,7 @@ describe('Bddflow', function() {
     var results = [];
 
     function log(loc) {
-      results.push(this.__path);
+      results.push(this.__conjure__path);
     }
 
     this.flow

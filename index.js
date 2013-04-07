@@ -22,13 +22,16 @@ var extend = require('extend');
 
 // Match properties that should not be 'inherited' by it(), hooks, etc.
 var defOmitContextRegex = {
+  all: [/^__conjure__/],
   describe: [],
-  hook: [],
-  it: [],
+  hook: [/^(it|describe|before|beforeEach|after|afterEach)$/],
+  it: [/^(it|describe|before|beforeEach|after|afterEach)$/],
   rootDescribe: []
 };
 
 function create() { return new Bddflow(); }
+
+var sharedContext;
 
 /**
  * Flow configuration and execution.
@@ -49,11 +52,7 @@ function Bddflow() {
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
   this.running = false;
-  hideEnumerableProps(this);
 }
-Bddflow.sharedConfigKeys = [
-  'describeWrap', 'itWrap', 'omitContextRegex', 'path', 'grep', 'grepv'
-];
 
 configurable(Bddflow.prototype);
 
@@ -78,16 +77,39 @@ Bddflow.prototype.addContextProp = function(key, val) {
 Bddflow.prototype.addRootDescribe = function(name, cb) {
   var self = this;
   var desc = new Describe(name);
-
-  var bddFlowConfig = {}; // Propagate selected settings.
-  Bddflow.sharedConfigKeys.forEach(function(key) {
-    bddFlowConfig[key] = self.get(key);
-  });
-  desc.set('bddFlowConfig', bddFlowConfig);
-
+  desc.set('bddFlow', this);
   desc.describe(name, cb, true);
   this.rootDescribes.push(desc);
   return this;
+};
+
+Bddflow.prototype.filterProps = function(obj, type) {
+  var omitContextRegex = this.get('omitContextRegex');
+  var regex = omitContextRegex.all.concat(omitContextRegex[type]);
+  return Object.keys(obj).reduce(function(memo, key) {
+    var omit = false;
+    regex.forEach(function(re) {
+      omit = omit || re.test(key);
+    });
+    if (omit) {
+      return memo;
+    }
+    memo[key] = obj[key];
+    return memo;
+  }, {});
+};
+
+/**
+ * Filter 'this' into an object with properties that can be 'inherited'
+ * between hooks/describe/it.
+ *
+ * Static used in other classes via call(). Exposed for test access.
+ *
+ * @param {string} type 'describe', 'hook', 'it', 'rootDescribe'
+ * @return {object}
+ */
+Bddflow.prototype.getSharedContext = function(type) {
+  return this.filterProps(sharedContext, type);
 };
 
 /**
@@ -125,70 +147,16 @@ Bddflow.prototype.run = function() {
 
   var batch = new Batch();
   batch.concurrency = 1;
+  sharedContext = clone(this.seedProps);
   this.rootDescribes.forEach(function(desc) {
     batch.push(function(taskDone) {
-      extend(desc, self.seedProps);
-      runSteps(desc.__steps, taskDone);
+      runSteps(desc.steps, function() {
+        taskDone();
+      });
     });
   });
   batch.end(this.get('done'));
 };
-
-/**
- * Filter 'this' into an object with properties that can be 'inherited'
- * between hooks/describe/it.
- *
- * Static used in other classes via call(). Exposed for test access.
- *
- * @param {string} type 'describe', 'hook', 'it', 'rootDescribe'
- * @return {object}
- */
-Bddflow.getInheritableContext = function(type) {
-  var self = this;
-  var omitContextRegex = this.get('bddFlowConfig').omitContextRegex;
-  var regex = omitContextRegex[type];
-
-  return Object.keys(this).reduce(function(memo, key) {
-    var omit = false;
-    regex.forEach(function(re) {
-      omit = omit || re.test(key);
-    });
-    if (omit) {
-      return memo;
-    }
-    memo[key] = self[key];
-    return memo;
-  }, {});
-};
-
-/**
- * Augment 'this' with a new non-enumerable/configrable property intended
- * for internal-use only. Help avoid conflicts with properties 'inherited'
- * via getInheritableContext.
- *
- * Static used in other classes via call(). Exposed for test access.
- *
- * @param {string} key
- * @param {mixed} val
- */
-Bddflow.addInternalProp = function(key, val) {
-  addUnenumerableProp(this, '__' + key, val, true);
-};
-
-/**
- * Callback context for before(), beforeEach(), etc.
- *
- * @param {string} name Of enclosing describe().
- */
-function HookContext(name) {
-  Bddflow.addInternalProp.call(this, 'name', name);
-  this.settings = {
-    bddFlowConfig: {}
-  };
-  hideEnumerableProps(this);
-}
-configurable(HookContext.prototype);
-HookContext.prototype.getInheritableContext = Bddflow.getInheritableContext;
 
 // Auto-terminating callback for use with Batch#push.
 Bddflow.defaultHookImpl = function(done) { done(); };
@@ -208,7 +176,7 @@ function HookSet() {
  * @param {string} name Test subject.
  */
 function ItCallback(name, cb) {
-  Bddflow.addInternalProp.call(this, 'name', name);
+  this.name = name;
   this.cb = cb;
 }
 
@@ -218,16 +186,14 @@ function ItCallback(name, cb) {
  * @param {string} name Subject expected to exhibit some behavior.
  */
 function Describe(name) {
-  Bddflow.addInternalProp.call(this, 'name', name);
-  Bddflow.addInternalProp.call(this, 'steps', []);
-  Bddflow.addInternalProp.call(this, 'hooks', new HookSet());
+  this.name = name;
+  this.steps = [];
+  this.hooks = new HookSet();
   this.settings = {
-    bddFlowConfig: {}
+    bddFlow: {}
   };
-  hideEnumerableProps(this);
 }
 configurable(Describe.prototype);
-Describe.prototype.getInheritableContext = Bddflow.getInheritableContext;
 
 /**
  * Add an it() step.
@@ -236,7 +202,7 @@ Describe.prototype.getInheritableContext = Bddflow.getInheritableContext;
  * @param {function} cb Batch#push compat.
  */
 Describe.prototype.it = function(name, cb) {
-  this.__steps.push(new ItCallback(name, cb));
+  this.steps.push(new ItCallback(name, cb));
 };
 
 /**
@@ -249,16 +215,16 @@ Describe.prototype.describe = function(name, cb, isRoot) {
   var self = this;
   var step = function(done) {
     var desc = new Describe(name); // Collect nested steps.
-    var bddFlowConfig = clone(self.get('bddFlowConfig'));
-    bddFlowConfig.path.push(name);
-    desc.set('bddFlowConfig', bddFlowConfig);
-    extend(desc, self.getInheritableContext(isRoot ? 'rootDescribe' : 'describe'));
+    var bddFlow = self.get('bddFlow');
+    var path = bddFlow.get('path');
+    path.push(name);
+    desc.set('bddFlow', bddFlow);
 
-    var describeWrap = self.get('bddFlowConfig').describeWrap || defDescribeWrap;
+    var describeWrap = bddFlow.get('describeWrap') || defDescribeWrap;
     describeWrap(name, function() {
       var wrapContext = this;
       var mergedContext = extend(
-        desc.getInheritableContext('describe'),
+        sharedContext,
         wrapContext
       );
       mergedContext.describe = bind(desc, 'describe');
@@ -267,97 +233,96 @@ Describe.prototype.describe = function(name, cb, isRoot) {
       mergedContext.beforeEach = bind(desc, 'beforeEach');
       mergedContext.after = bind(desc, 'after');
       mergedContext.afterEach = bind(desc, 'afterEach');
-      addUnenumerableProp(mergedContext, '__name', name);
+      addInternalProp(mergedContext, 'name', name);
       cb.call(mergedContext);
     });
-
-    var hc = new HookContext(name);
-    hc.set('bddFlowConfig', self.get('bddFlowConfig'));
 
     var batch = new Batch();
 
     batch.push(function(done) {
-      extend(hc, desc.getInheritableContext('hook'));
       function asyncCb() {
-        extend(desc, hc.getInheritableContext('hook'));
+        extend(sharedContext, bddFlow.filterProps(context, 'hook')); // Apply any changes.
         done();
       }
-      var hook = desc.__hooks.before;
-
-      var context = hc.getInheritableContext('hook');
+      var hook = desc.hooks.before;
+      var context = bddFlow.getSharedContext('hook');
       if (hook.length) { // Expects callback arg.
-        desc.__hooks.before.call(context, asyncCb);
+        desc.hooks.before.call(context, asyncCb);
       } else {
-        desc.__hooks.before.call(context);
-        extend(hc, context);
+        desc.hooks.before.call(context);
         asyncCb();
       }
     });
 
     batch.push(function(done) { // Wrap hooks around each internal describe()/it()
-      desc.__steps = desc.__steps.map(function(step) {
+      desc.steps = desc.steps.map(function(step) {
         if (step instanceof DescribeCallback) {
-          extend(desc, hc.getInheritableContext('describe'));
-          return new DescribeCallback(step.__name, bind(desc, step.cb));
+          var context = bddFlow.getSharedContext('describe');
+          return new DescribeCallback(step.name, bind(context, step.cb));
         }
 
-        var itPath = bddFlowConfig.path.concat(step.__name);
-        if (bddFlowConfig.grepv) {
-          if (bddFlowConfig.grepv.test(itPath.join(' '))) {
-            return new ItCallback(step.__name, batchNoOp);
+        var itPath = path.concat(step.name);
+        var grep = bddFlow.get('grep');
+        var grepv = bddFlow.get('grepv');
+        if (grepv) {
+          if (grepv.test(itPath.join(' '))) {
+            return new ItCallback(step.name, batchNoOp);
           }
-        } else if (bddFlowConfig.grep) {
-          if (!bddFlowConfig.grep.test(itPath.join(' '))) {
-            return new ItCallback(step.__name, batchNoOp);
+        } else if (grep) {
+          if (!grep.test(itPath.join(' '))) {
+            return new ItCallback(step.name, batchNoOp);
           }
         }
 
-        return new DescribeCallback(step.__name, function(done) { // instanceof ItCallback
+        return new ItCallback(step.name, function(done) { // instanceof ItCallback
           var batch = new Batch();
           batch.push(function(done) {
-            extend(hc, desc.getInheritableContext('hook'));
             function asyncCb() {
-              extend(desc, hc.getInheritableContext('hook'));
+              extend(sharedContext, bddFlow.filterProps(context, 'it')); // Apply any changes.
               done();
             }
-            var hook = desc.__hooks.beforeEach;
-            var context = hc.getInheritableContext('hook');
+            var hook = desc.hooks.beforeEach;
+            var context = bddFlow.getSharedContext('hook');
             if (hook.length) { // Expects callback arg.
-              desc.__hooks.beforeEach.call(context, asyncCb);
+              desc.hooks.beforeEach.call(context, asyncCb);
             } else {
-              desc.__hooks.beforeEach.call(context);
+              desc.hooks.beforeEach.call(context);
               asyncCb();
             }
           });
           batch.push(function(done) {
-            var itContext = {};
-            extend(itContext, desc.getInheritableContext('it'));
+            var context = bddFlow.getSharedContext('it');
 
-            var itWrap = self.get('bddFlowConfig').itWrap || defItWrap;
-            itWrap(step.__name, function() {
+            function asyncCb() {
+              extend(sharedContext, bddFlow.filterProps(context, 'it')); // Apply any changes.
+              done();
+            }
+
+            var itWrap = bddFlow.get('itWrap') || defItWrap;
+            itWrap(step.name, function() {
               var wrapContext = this;
-              var mergedContext = extend(itContext, wrapContext);
-              addUnenumerableProp(mergedContext, '__name', step.__name);
-              addUnenumerableProp(mergedContext, '__path', itPath);
+              extend(context, wrapContext);
+              addInternalProp(context, 'name', step.name, true);
+              addInternalProp(context, 'path', itPath, true);
               if (step.cb.length) { // Expects callback arg.
-                step.cb.call(mergedContext, done);
+                step.cb.call(context, asyncCb);
               } else {
-                step.cb.call(mergedContext);
-                done();
+                step.cb.call(context);
+                asyncCb();
               }
             });
           });
           batch.push(function(done) {
             function asyncCb() {
-              extend(desc, hc.getInheritableContext('hook'));
+              extend(sharedContext, bddFlow.filterProps(context, 'hook')); // Apply any changes.
               done();
             }
-            var hook = desc.__hooks.afterEach;
-            var context = hc.getInheritableContext('hook');
+            var hook = desc.hooks.afterEach;
+            var context = bddFlow.getSharedContext('hook');
             if (hook.length) { // Expects callback arg.
-              desc.__hooks.afterEach.call(context, asyncCb);
+              desc.hooks.afterEach.call(context, asyncCb);
             } else {
-              desc.__hooks.afterEach.call(context);
+              desc.hooks.afterEach.call(context);
               asyncCb();
             }
           });
@@ -366,21 +331,20 @@ Describe.prototype.describe = function(name, cb, isRoot) {
         });
       });
 
-      runSteps(desc.__steps, done);
+      runSteps(desc.steps, done);
     });
 
     batch.push(function(done) {
-      extend(hc, desc.getInheritableContext('hook'));
       function asyncCb() {
-        extend(desc, hc.getInheritableContext('hook'));
+        extend(sharedContext, bddFlow.filterProps(context, 'hook')); // Apply any changes.
         done();
       }
-      var hook = desc.__hooks.after;
-      var context = hc.getInheritableContext('hook');
+      var hook = desc.hooks.after;
+      var context = bddFlow.getSharedContext('hook');
       if (hook.length) { // Expects callback arg.
-        desc.__hooks.after.call(context, asyncCb);
+        desc.hooks.after.call(context, asyncCb);
       } else {
-        desc.__hooks.after.call(context);
+        desc.hooks.after.call(context);
         asyncCb();
       }
     });
@@ -388,7 +352,7 @@ Describe.prototype.describe = function(name, cb, isRoot) {
     batch.concurrency = 1;
     batch.end(done);
   };
-  this.__steps.push(new DescribeCallback(name, step));
+  this.steps.push(new DescribeCallback(name, step));
 };
 
 /**
@@ -396,35 +360,35 @@ Describe.prototype.describe = function(name, cb, isRoot) {
  *
  * @param {function} cb
  */
-Describe.prototype.before = function(cb) { this.__hooks.before = cb; };
+Describe.prototype.before = function(cb) { this.hooks.before = cb; };
 
 /**
  * Override the default no-op beforeEach() hook.
  *
  * @param {function} cb
  */
-Describe.prototype.beforeEach = function(cb) { this.__hooks.beforeEach = cb; };
+Describe.prototype.beforeEach = function(cb) { this.hooks.beforeEach = cb; };
 
 /**
  * Override the default no-op after() hook.
  *
  * @param {function} cb
  */
-Describe.prototype.after = function(cb) { this.__hooks.after = cb; };
+Describe.prototype.after = function(cb) { this.hooks.after = cb; };
 
 /**
  * Override the default no-op afterEach() hook.
  *
  * @param {function} cb
  */
-Describe.prototype.afterEach = function(cb) { this.__hooks.afterEach = cb; };
+Describe.prototype.afterEach = function(cb) { this.hooks.afterEach = cb; };
 
 /**
  * @param {string} name Test subject.
  * @param {function} cb
  */
 function DescribeCallback(name, cb) {
-  Bddflow.addInternalProp.call(this, 'name', name);
+  this.name = name;
   this.cb = cb;
 }
 
@@ -447,15 +411,13 @@ function batchNoOp(taskDone) { taskDone(); }
 function defItWrap(name, cb) { cb(); }
 function defDescribeWrap(name, cb) { cb(); }
 
-function hideEnumerableProps(obj) {
-  Object.keys(obj).forEach(function(key) {
-    Object.defineProperty(obj, key, {enumerable: false, configurable: false});
-  });
+function delInternalProp(obj, key) {
+  delete obj['__conjure__' + key];
 }
 
-function addUnenumerableProp(obj, key, val, writable) {
+function addInternalProp(obj, key, val, writable) {
   Object.defineProperty(
-    obj, key,
-    {value: val, enumerable: false, configurable: false, writable: !!writable}
+    obj, '__conjure__' + key,
+    {value: val, enumerable: false, configurable: true, writable: !!writable}
   );
 }
