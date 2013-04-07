@@ -31,8 +31,6 @@ var defOmitContextRegex = {
 
 function create() { return new Bddflow(); }
 
-var sharedContext;
-
 /**
  * Flow configuration and execution.
  */
@@ -52,6 +50,7 @@ function Bddflow() {
   this.batch = new Batch();
   this.seedProps = {}; // Will me merged into initial hook/describe/it context.
   this.running = false;
+  this.sharedContext = {};
 }
 
 configurable(Bddflow.prototype);
@@ -83,6 +82,10 @@ Bddflow.prototype.addRootDescribe = function(name, cb) {
   return this;
 };
 
+Bddflow.prototype.extendSharedContext = function(ext, type) {
+  return extend(this.sharedContext, this.filterProps(ext, type));
+};
+
 Bddflow.prototype.filterProps = function(obj, type) {
   var omitContextRegex = this.get('omitContextRegex');
   var regex = omitContextRegex.all.concat(omitContextRegex[type]);
@@ -109,7 +112,7 @@ Bddflow.prototype.filterProps = function(obj, type) {
  * @return {object}
  */
 Bddflow.prototype.getSharedContext = function(type) {
-  return this.filterProps(sharedContext, type);
+  return this.filterProps(this.sharedContext, type);
 };
 
 /**
@@ -147,7 +150,7 @@ Bddflow.prototype.run = function() {
 
   var batch = new Batch();
   batch.concurrency = 1;
-  sharedContext = clone(this.seedProps);
+  this.sharedContext = clone(this.seedProps);
   this.rootDescribes.forEach(function(desc) {
     batch.push(function(taskDone) {
       runSteps(desc.steps, function() {
@@ -222,11 +225,8 @@ Describe.prototype.describe = function(name, cb, isRoot) {
 
     var describeWrap = bddFlow.get('describeWrap') || defDescribeWrap;
     describeWrap(name, function() {
-      var wrapContext = this;
-      var mergedContext = extend(
-        sharedContext,
-        wrapContext
-      );
+      var wrapContext = this || {};
+      var mergedContext = bddFlow.extendSharedContext(wrapContext, 'describe');
       mergedContext.describe = bind(desc, 'describe');
       mergedContext.it = bind(desc, 'it');
       mergedContext.before = bind(desc, 'before');
@@ -241,7 +241,7 @@ Describe.prototype.describe = function(name, cb, isRoot) {
 
     batch.push(function(done) {
       function asyncCb() {
-        extend(sharedContext, bddFlow.filterProps(context, 'hook')); // Apply any changes.
+        bddFlow.extendSharedContext(context, 'hook'); // Apply changes.
         done();
       }
       var hook = desc.hooks.before;
@@ -278,7 +278,7 @@ Describe.prototype.describe = function(name, cb, isRoot) {
           var batch = new Batch();
           batch.push(function(done) {
             function asyncCb() {
-              extend(sharedContext, bddFlow.filterProps(context, 'it')); // Apply any changes.
+              bddFlow.extendSharedContext(context, 'hook'); // Apply changes.
               done();
             }
             var hook = desc.hooks.beforeEach;
@@ -294,13 +294,13 @@ Describe.prototype.describe = function(name, cb, isRoot) {
             var context = bddFlow.getSharedContext('it');
 
             function asyncCb() {
-              extend(sharedContext, bddFlow.filterProps(context, 'it')); // Apply any changes.
+              bddFlow.extendSharedContext(context, 'it'); // Apply changes.
               done();
             }
 
             var itWrap = bddFlow.get('itWrap') || defItWrap;
             itWrap(step.name, function() {
-              var wrapContext = this;
+              var wrapContext = this || {};
               extend(context, wrapContext);
               addInternalProp(context, 'name', step.name, true);
               addInternalProp(context, 'path', itPath, true);
@@ -314,7 +314,7 @@ Describe.prototype.describe = function(name, cb, isRoot) {
           });
           batch.push(function(done) {
             function asyncCb() {
-              extend(sharedContext, bddFlow.filterProps(context, 'hook')); // Apply any changes.
+              bddFlow.extendSharedContext(context, 'hook'); // Apply changes.
               done();
             }
             var hook = desc.hooks.afterEach;
@@ -336,7 +336,7 @@ Describe.prototype.describe = function(name, cb, isRoot) {
 
     batch.push(function(done) {
       function asyncCb() {
-        extend(sharedContext, bddFlow.filterProps(context, 'hook')); // Apply any changes.
+        bddFlow.extendSharedContext(context, 'hook'); // Apply changes.
         done();
       }
       var hook = desc.hooks.after;
