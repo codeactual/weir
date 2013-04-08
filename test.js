@@ -181,6 +181,30 @@ describe('Bddflow', function() {
       .run();
   });
 
+  it('should pass context from it() to it()', function(testDone) {
+    var self = this;
+    var results = [];
+
+    function log(loc, propName) { results.push(loc + ':' + this.prop); }
+
+    this.flow
+      .addRootDescribe('subject', function() {
+        this.before(function() { this.prop = 0; });
+        this.describe('d', function() {
+          this.it('i1', function() { this.prop++; log.call(this, 'i1'); });
+          this.it('i2', function() { this.prop++; log.call(this, 'i2'); });
+        });
+        this.describe('d2', function() {
+          this.it('i3', function() { this.prop++; log.call(this, 'i3'); });
+        });
+      })
+      .set('done', function() {
+        results.should.deep.equal(['i1:1', 'i2:2', 'i3:3']);
+        testDone();
+      })
+      .run();
+  });
+
   it('should omit bdd-flow class props', function(testDone) {
     var self = this;
     var results = [];
