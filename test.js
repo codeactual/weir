@@ -329,6 +329,27 @@ describe('Bddflow', function() {
       .run();
   });
 
+  it('should omit context prop by exact string', function(testDone) {
+    var self = this;
+    var results = [];
+
+    function log(loc, propName) { results.push(loc + ':' + typeof this[propName]); }
+
+    var prop = 'it-cant-see-me';
+
+    this.flow
+      .addContextProp(prop, 'foo')
+      .hideContextProp('it', prop)
+      .addRootDescribe('subject', function() {
+        this.it('i1', function() { log.call(this, 'i1', prop); });
+      })
+      .set('done', function() {
+        results.should.deep.equal(['i1:undefined']);
+        testDone();
+      })
+      .run();
+  });
+
   it('should optionally wrap it() callbacks', function(testDone) {
     var wrapperContext = {fromWrap: 'wrapProp'};
     var actualMergedContext = {
