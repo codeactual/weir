@@ -120,7 +120,7 @@ Bddflow.prototype.run = function() {
   this.running = true;
 
   var batch = new Batch();
-  batch.concurrency = 1;
+  batch.concurrency(1);
   this.set('sharedContext', this.seedProps);
   this.rootDescribes.forEach(function(desc) {
     batch.push(function(taskDone) {
@@ -331,7 +331,7 @@ Describe.prototype.describe = function(name, cb, isRoot) {
               asyncCb();
             }
           });
-          batch.concurrency = 1;
+          batch.concurrency(1);
           batch.end(done);
         });
       });
@@ -354,7 +354,7 @@ Describe.prototype.describe = function(name, cb, isRoot) {
       }
     });
 
-    batch.concurrency = 1;
+    batch.concurrency(1);
     batch.end(done);
   };
   this.steps.push(new DescribeCallback(name, step));
@@ -406,7 +406,7 @@ function DescribeCallback(name, cb) {
  */
 function runSteps(steps, cb) {
   var batch = new Batch();
-  batch.concurrency = 1;
+  batch.concurrency(1);
   steps.forEach(function(step) { batch.push(step.cb); });
   batch.end(cb);
 }
