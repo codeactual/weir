@@ -123,6 +123,7 @@ Bddflow.prototype.run = function() {
   this.set('sharedContext', this.seedProps);
   this.rootDescribes.forEach(function(desc) {
     batch.push(function(taskDone) {
+      self.set('path', []);
       Bddflow.describeConfigKeys.forEach(function(key) {
         desc.set(key, self.get(key));
       });

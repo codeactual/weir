@@ -414,20 +414,32 @@ describe('Bddflow', function() {
     }
 
     this.flow
-      .addRootDescribe('r', function() {
+      .addRootDescribe('r1', function() {
         this.describe('d', function() {
           this.it('i2', function() { log.call(this, 'i2'); });
           this.describe('d2', function() {
             this.it('i3', function() { log.call(this, 'i3'); });
           });
         });
-      this.it('i1', function() { log.call(this, 'i1'); });
+        this.it('i1', function() { log.call(this, 'i1'); });
+      })
+      .addRootDescribe('r2', function() {
+        this.describe('d', function() {
+          this.it('i2', function() { log.call(this, 'i2'); });
+          this.describe('d2', function() {
+            this.it('i3', function() { log.call(this, 'i3'); });
+          });
+        });
+        this.it('i1', function() { log.call(this, 'i1'); });
       })
       .set('done', function() {
         results.should.deep.equal([
-          ['r', 'd', 'i2'],
-          ['r', 'd', 'd2', 'i3'],
-          ['r', 'i1']
+          ['r1', 'd', 'i2'],
+          ['r1', 'd', 'd2', 'i3'],
+          ['r1', 'i1'],
+          ['r2', 'd', 'i2'],
+          ['r2', 'd', 'd2', 'i3'],
+          ['r2', 'i1']
         ]);
         testDone();
       })
@@ -600,7 +612,7 @@ describe('Bddflow', function() {
     batch.end(testDone);
   });
 
-  it('should support multiple root describes', function(testDone) {
+  it('should follow correct execution order w/ multiple roots', function(testDone) {
     var self = this;
     var actualOrder = [];
 
@@ -609,10 +621,10 @@ describe('Bddflow', function() {
     }
 
     this.flow
-      .addRootDescribe('subject 1', function() {
+      .addRootDescribe('r1', function() {
         self.defaultDescribe.call(this, log);
       })
-      .addRootDescribe('subject 2', function() {
+      .addRootDescribe('r2', function() {
         self.defaultDescribe.call(this, log);
       })
       .set('done', function() {
@@ -626,7 +638,7 @@ describe('Bddflow', function() {
     var self = this;
 
     this.flow
-      .addRootDescribe('subject 2', function() {})
+      .addRootDescribe('r', function() {})
       .set('done', function() {
         self.flow.isRunning().should.equal(true);
         testDone();
