@@ -83,10 +83,7 @@ describe('Bddflow', function() {
     var self = this;
     var prop = ['first']; // Verify this gets updated with more items.
 
-    function log(loc) {
-      this.prop.push(loc);
-      prop = this.prop;
-    }
+    function log(loc) { this.prop.push(loc); prop = this.prop; }
 
     this.flow
       .addRootDescribe('subject', function() {
@@ -104,9 +101,7 @@ describe('Bddflow', function() {
     var self = this;
     var results = [];
 
-    function log(loc, propName) {
-      results.push(loc + ':' + this.prop);
-    }
+    function log(loc, propName) { results.push(loc + ':' + this.prop); }
 
     this.flow
       .addRootDescribe('subject', function() {
@@ -126,9 +121,7 @@ describe('Bddflow', function() {
     var self = this;
     var results = [];
 
-    function log(loc, propName) {
-      results.push(loc + ':' + this.prop);
-    }
+    function log(loc, propName) { results.push(loc + ':' + this.prop); }
 
     this.flow
       .addRootDescribe('subject', function() {
@@ -148,9 +141,7 @@ describe('Bddflow', function() {
     var self = this;
     var results = [];
 
-    function log(loc, propName) {
-      results.push(loc + ':' + this.prop);
-    }
+    function log(loc, propName) { results.push(loc + ':' + this.prop); }
 
     this.flow
       .addRootDescribe('subject', function() {
@@ -171,9 +162,7 @@ describe('Bddflow', function() {
     var self = this;
     var results = [];
 
-    function log(loc, propName) {
-      results.push(loc + ':' + this.prop);
-    }
+    function log(loc, propName) { results.push(loc + ':' + this.prop); }
 
     this.flow
       .addRootDescribe('subject', function() {
@@ -278,9 +267,7 @@ describe('Bddflow', function() {
     var self = this;
     var results = [];
 
-    function log(loc, propName) {
-      results.push(loc + ':' + typeof this[propName]);
-    }
+    function log(loc, propName) { results.push(loc + ':' + typeof this[propName]); }
 
     var prop = 'it-cant-see-me';
 
@@ -313,9 +300,7 @@ describe('Bddflow', function() {
     var self = this;
     var results = [];
 
-    function log(loc, propName) {
-      results.push(loc + ':' + typeof this[propName]);
-    }
+    function log(loc, propName) { results.push(loc + ':' + typeof this[propName]); }
 
     var prop = 'hooks-cant-see-me';
 
@@ -359,15 +344,13 @@ describe('Bddflow', function() {
       .set('itWrap', itWrap)
       .addContextProp('fromIt', 'itProp')
       .addRootDescribe('subject', function() {
-        this.it('expectation', function(testDone) {
+        this.it('expectation', function() {
           actualMergedContext.topLevel = this;
-          testDone();
         });
 
         this.describe('nested subject', function() {
-          this.it('expectation', function(testDone) {
+          this.it('expectation', function() {
             actualMergedContext.nested = this;
-            testDone();
           });
         });
       })
@@ -381,13 +364,39 @@ describe('Bddflow', function() {
       .run();
   });
 
+  it('should optionally wrap describe() callbacks', function(testDone) {
+    var wrapperContext = {fromWrap: 'wrapProp'};
+    var actualMergedContext = {
+      topLevel: undefined,
+      nested: undefined
+    };
+
+    function describeWrap(name, cb) { cb.call(wrapperContext); }
+
+    this.flow
+      .set('describeWrap', describeWrap)
+      .addContextProp('fromDescribe', 'describeProp')
+      .addRootDescribe('subject', function() {
+        actualMergedContext.topLevel = this;
+        this.describe('nested subject', function() {
+          actualMergedContext.nested = this;
+        });
+      })
+      .set('done', function() {
+        actualMergedContext.topLevel.fromDescribe.should.equal('describeProp');
+        actualMergedContext.topLevel.fromWrap.should.equal('wrapProp');
+        actualMergedContext.nested.fromDescribe.should.equal('describeProp');
+        actualMergedContext.nested.fromWrap.should.equal('wrapProp');
+        testDone();
+      })
+      .run();
+  });
+
   it('should store describe() and it() names', function(testDone) {
     var self = this;
     var results = [];
 
-    function log() {
-      results.push(this.__conjure__name);
-    }
+    function log() { results.push(this.__conjure__name); }
 
     this.flow
       .addRootDescribe('r', function() {
@@ -409,9 +418,7 @@ describe('Bddflow', function() {
     var self = this;
     var results = [];
 
-    function log(loc) {
-      results.push(this.__conjure__path);
-    }
+    function log(loc) { results.push(this.__conjure__path); }
 
     this.flow
       .addRootDescribe('r1', function() {
@@ -450,9 +457,7 @@ describe('Bddflow', function() {
     var self = this;
     var results;
 
-    function log(loc) {
-      results.push(loc);
-    }
+    function log(loc) { results.push(loc); }
 
     function rootDescribe() {
       this.describe('d', function() {
@@ -533,9 +538,7 @@ describe('Bddflow', function() {
     var self = this;
     var results;
 
-    function log(loc) {
-      results.push(loc);
-    }
+    function log(loc) { results.push(loc); }
 
     function rootDescribe() {
       this.describe('d', function() {
@@ -616,9 +619,7 @@ describe('Bddflow', function() {
     var self = this;
     var actualOrder = [];
 
-    function log(loc) {
-      actualOrder.push(loc);
-    }
+    function log(loc) { actualOrder.push(loc); }
 
     this.flow
       .addRootDescribe('r1', function() {
