@@ -126,9 +126,7 @@ Bddflow.prototype.run = function() {
       Bddflow.describeConfigKeys.forEach(function(key) {
         desc.set(key, self.get(key));
       });
-      runSteps(desc.steps, function() {
-        taskDone();
-      });
+      runSteps(desc.steps, taskDone);
     });
   });
   batch.end(this.get('done'));
