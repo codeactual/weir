@@ -120,7 +120,7 @@ Bddflow.prototype.run = function() {
 
   var batch = new Batch();
   batch.concurrency = 1;
-  this.set('sharedContext', clone(this.seedProps));
+  this.set('sharedContext', this.seedProps);
   this.rootDescribes.forEach(function(desc) {
     batch.push(function(taskDone) {
       Bddflow.describeConfigKeys.forEach(function(key) {
