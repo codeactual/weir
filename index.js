@@ -21,11 +21,12 @@ var configurable = require('configurable.js');
 var extend = require('extend');
 
 // Match properties that should not be 'inherited' by it(), hooks, etc.
+var flowFnRegex = /^(it|describe|before|beforeEach|after|afterEach)$/;
 var defOmitContextRegex = {
   all: [/^__conjure__/],
   describe: [],
-  hook: [/^(it|describe|before|beforeEach|after|afterEach)$/],
-  it: [/^(it|describe|before|beforeEach|after|afterEach)$/],
+  hook: [flowFnRegex],
+  it: [flowFnRegex],
   rootDescribe: []
 };
 
