@@ -139,6 +139,7 @@ Optional:
 > Prevent a type of flow function from 'inheriting' specific context properties from enclosing/subsequently-executed flow functions.
 
 * Types: `it`, `hook`
+* Key: `RegExp` or `string` for an exact match.
 
 ### `run()`
 
