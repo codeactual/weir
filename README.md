@@ -118,6 +118,7 @@ Optional:
 
 * `{function} done`: Fires after flow completion.
 * `{function} itWrap`: `it()` callbacks will be executed inside this wrapper and "inherit" that context. For example, [conjure](https://github.com/codeactual/conjure) uses it to run every `it()` inside a [CasperJS](http://casperjs.org/) `then()` to inject the latter's API.
+* `{function} describeWrap`: Same behavior as `itWrap` for `describe()`.
 * `{RegExp} grep`: Limit execution to `it()` definitions whose "BDD path" matches the pattern. Example path from a script with nested `describe()` layers: `"my-lib MyClass #myMethod should validate X"`. (Cannot combine with `grepv`.)
 * `{RegExp} grepv`: Limit execution to `it()` definitions whose "BDD path" don't match the pattern. Example path from a script with nested `describe()` layers: `"my-lib MyClass #myMethod should validate X"`. (Cannot combine with `grep`.)
 
