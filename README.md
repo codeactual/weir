@@ -4,10 +4,12 @@ Library for building and running BDD flows.
 
 * Nested `describe()`
 * Sync or async `it()`
-* `before/beforeEach/after/afterEach` hooks, sync or async
+* Sync or async `before/beforeEach/after/afterEach`
 * Select/omit `it()` execution by regular expression
-* Assertion library agnostic
 * Manage `it()` and hook contexts with property injection/omission
+* Supply your own assertion library
+
+API modeled after [Mocha](http://visionmedia.github.io/mocha/).
 
 [![Build Status](https://travis-ci.org/codeactual/bdd-flow.png)](https://travis-ci.org/codeactual/bdd-flow)
 
