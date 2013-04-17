@@ -98,19 +98,16 @@ flow
 
 ### [Component](https://github.com/component/component)
 
-Install to `components/`:
-
     $ component install codeactual/bdd-flow
 
-Build standalone file in `build/`:
+### [NPM](https://npmjs.org/package/bdd-flow)
 
-    $ grunt dist
+    npm install bdd-flow
 
 ## Module API
 
 * `Bddflow`: Flow configuration and execution.
 * `create`: `new Bddflow()` wrapper
-* `require`: [Component](https://github.com/component/component)-environment `require()`
 
 ## `Bddflow` API
 
@@ -153,17 +150,4 @@ Optional:
 
 ## Tests
 
-    npm install --devDependencies
     npm test
-
-## Change Log
-
-### 0.1.0
-
-* Initial `Bddflow` API: `addContextProp()`, `addRootDescribe()`, `hideContextProp()`, `run()`.
-* Nested `describe()`
-* Sync or async `it()`
-* `before/beforeEach/after/afterEach` hooks, sync or async
-* Select `it()` execution by regular expression
-* Assertion library agnostic
-* Manage `it()` and hook contexts with property injection/omission
