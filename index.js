@@ -10,7 +10,8 @@
 
 module.exports = {
   Bddflow: Bddflow,
-  create: create,
+  create: function() { return new Bddflow(); },
+  mixin: function(ext) { extend(Bddflow.prototype, ext); },
   require: require // Allow tests to use component-land require.
 };
 
@@ -29,8 +30,6 @@ var defOmitContextRegex = {
   it: [flowFnRegex],
   rootDescribe: []
 };
-
-function create() { return new Bddflow(); }
 
 /**
  * Flow configuration and execution.
