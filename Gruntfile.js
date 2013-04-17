@@ -63,7 +63,7 @@ module.exports = function(grunt) {
       test_lib: {
         options: mochaShelljsOpt,
         command: 'mocha --colors --async-only --reporter spec test.js'
-      },
+      }
     }
   });
 
