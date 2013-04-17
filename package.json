@@ -26,12 +26,12 @@
     "grunt-contrib-jshint": "~0.3.0",
     "grunt-contrib-uglify": "~0.2.0",
     "grunt-shell": "~0.2.1",
-    "mocha": "~1.8.2",
+    "mocha": "~1.9.0",
     "sinon": "~1.6.0",
     "sinon-chai": "~2.3.1"
   },
   "scripts": {
-    "test": "grunt build && mocha --reporter spec test.js"
+    "test": "grunt test"
   },
   "gitemplate": {
     "originSha": "d1c2197793",
