@@ -16,7 +16,6 @@ module.exports = {
 };
 
 var Batch = require('batch');
-var bind = require('bind');
 var clone = require('clone');
 var configurable = require('configurable.js');
 var extend = require('extend');
@@ -231,12 +230,12 @@ Describe.prototype.describe = function(name, cb, isRoot) {
     describeWrap(name, function() {
       var wrapContext = this || {};
       var mergedContext = desc.extendSharedContext(wrapContext, 'describe');
-      mergedContext.describe = bind(desc, 'describe');
-      mergedContext.it = bind(desc, 'it');
-      mergedContext.before = bind(desc, 'before');
-      mergedContext.beforeEach = bind(desc, 'beforeEach');
-      mergedContext.after = bind(desc, 'after');
-      mergedContext.afterEach = bind(desc, 'afterEach');
+      mergedContext.describe = desc.describe.bind(desc);
+      mergedContext.it = desc.it.bind(desc);
+      mergedContext.before = desc.before.bind(desc);
+      mergedContext.beforeEach = desc.beforeEach.bind(desc);
+      mergedContext.after = desc.after.bind(desc);
+      mergedContext.afterEach = desc.afterEach.bind(desc);
       addInternalProp(mergedContext, 'name', name);
       cb.call(mergedContext);
     });
@@ -262,7 +261,7 @@ Describe.prototype.describe = function(name, cb, isRoot) {
       desc.steps = desc.steps.map(function(step) {
         if (step instanceof DescribeCallback) {
           var context = desc.getSharedContext('describe');
-          return new DescribeCallback(step.name, bind(context, step.cb));
+          return new DescribeCallback(step.name, step.cb.bind(context));
         }
 
         var itPath = path.concat(step.name);
