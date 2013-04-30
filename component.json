@@ -11,8 +11,9 @@
     "component/clone": "0.1.0"
   },
   "development": {},
+  "main": "lib/bdd-flow/index.js",
   "scripts": [
-    "index.js"
+    "lib/bdd-flow/index.js"
   ],
   "license": "MIT"
 }

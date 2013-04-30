@@ -5,13 +5,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-shell');
 
-  var mochaShelljsOpt = {stdout: true, stderr: true};
+  var mochaShelljsOpt = {stdout: true, stderr: false};
 
   grunt.initConfig({
     jshint: {
       src: {
         files: {
-          src: ['index.js']
+          src: ['index.js', 'lib/**/*.js']
         }
       },
       grunt: {
@@ -24,7 +24,7 @@ module.exports = function(grunt) {
           expr: true
         },
         files: {
-          src: ['test.js']
+          src: ['test/**/*.js']
         }
       },
       json: {
@@ -62,7 +62,7 @@ module.exports = function(grunt) {
       },
       test_lib: {
         options: mochaShelljsOpt,
-        command: 'mocha --colors --async-only --reporter spec test.js'
+        command: 'mocha --colors --async-only --reporter spec --recursive test/lib'
       }
     }
   });

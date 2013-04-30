@@ -1,3 +1,4 @@
+/*jshint expr:true*/
 var sinon = require('sinon');
 var chai = require('chai');
 
@@ -5,7 +6,7 @@ var should = chai.should();
 chai.Assertion.includeStack = true;
 chai.use(require('sinon-chai'));
 
-var bddflow = require('./dist/bdd-flow');
+var bddflow = require('../../..');
 var Bddflow = bddflow.Bddflow;
 
 var requireComponent = bddflow.require;

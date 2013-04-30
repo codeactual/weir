@@ -16,9 +16,8 @@
       "from": "sinon-chai@2.3.1"
     },
     "mocha": {
-      "version": "1.8.2",
-      "from": "https://registry.npmjs.org/mocha/-/mocha-1.8.2.tgz",
-      "resolved": "https://registry.npmjs.org/mocha/-/mocha-1.8.2.tgz",
+      "version": "1.9.0",
+      "from": "mocha@1.9.0",
       "dependencies": {
         "commander": {
           "version": "0.6.1",
@@ -26,7 +25,7 @@
         },
         "growl": {
           "version": "1.7.0",
-          "from": "growl@1.7.0"
+          "from": "growl@1.7.x"
         },
         "jade": {
           "version": "0.26.3",
@@ -44,8 +43,7 @@
         },
         "debug": {
           "version": "0.7.2",
-          "from": "debug@0.7.2",
-          "resolved": "https://registry.npmjs.org/debug/-/debug-0.7.2.tgz"
+          "from": "debug@*"
         },
         "mkdirp": {
           "version": "0.3.3",

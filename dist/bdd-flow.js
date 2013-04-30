@@ -126,17 +126,6 @@
             return object;
         };
     });
-    require.register("component-bind/index.js", function(exports, require, module) {
-        var slice = [].slice;
-        module.exports = function(obj, fn) {
-            if ("string" == typeof fn) fn = obj[fn];
-            if ("function" != typeof fn) throw new Error("bind() requires a function");
-            var args = [].slice.call(arguments, 2);
-            return function() {
-                return fn.apply(obj, args.concat(slice.call(arguments)));
-            };
-        };
-    });
     require.register("component-indexof/index.js", function(exports, require, module) {
         var indexOf = [].indexOf;
         module.exports = function(arr, obj) {
@@ -343,7 +332,7 @@
             }
         }
     });
-    require.register("bdd-flow/index.js", function(exports, require, module) {
+    require.register("bdd-flow/lib/bdd-flow/index.js", function(exports, require, module) {
         "use strict";
         module.exports = {
             Bddflow: Bddflow,
@@ -356,7 +345,6 @@
             require: require
         };
         var Batch = require("batch");
-        var bind = require("bind");
         var clone = require("clone");
         var configurable = require("configurable.js");
         var extend = require("extend");
@@ -481,12 +469,12 @@
                 describeWrap(name, function() {
                     var wrapContext = this || {};
                     var mergedContext = desc.extendSharedContext(wrapContext, "describe");
-                    mergedContext.describe = bind(desc, "describe");
-                    mergedContext.it = bind(desc, "it");
-                    mergedContext.before = bind(desc, "before");
-                    mergedContext.beforeEach = bind(desc, "beforeEach");
-                    mergedContext.after = bind(desc, "after");
-                    mergedContext.afterEach = bind(desc, "afterEach");
+                    mergedContext.describe = desc.describe.bind(desc);
+                    mergedContext.it = desc.it.bind(desc);
+                    mergedContext.before = desc.before.bind(desc);
+                    mergedContext.beforeEach = desc.beforeEach.bind(desc);
+                    mergedContext.after = desc.after.bind(desc);
+                    mergedContext.afterEach = desc.afterEach.bind(desc);
                     addInternalProp(mergedContext, "name", name);
                     cb.call(mergedContext);
                 });
@@ -509,7 +497,7 @@
                     desc.steps = desc.steps.map(function(step) {
                         if (step instanceof DescribeCallback) {
                             var context = desc.getSharedContext("describe");
-                            return new DescribeCallback(step.name, bind(context, step.cb));
+                            return new DescribeCallback(step.name, step.cb.bind(context));
                         }
                         var itPath = path.concat(step.name);
                         var grep = desc.get("grep");
@@ -646,12 +634,12 @@
     });
     require.alias("visionmedia-configurable.js/index.js", "bdd-flow/deps/configurable.js/index.js");
     require.alias("codeactual-extend/index.js", "bdd-flow/deps/extend/index.js");
-    require.alias("component-bind/index.js", "bdd-flow/deps/bind/index.js");
     require.alias("visionmedia-batch/index.js", "bdd-flow/deps/batch/index.js");
     require.alias("component-emitter/index.js", "visionmedia-batch/deps/emitter/index.js");
     require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
     require.alias("component-clone/index.js", "bdd-flow/deps/clone/index.js");
     require.alias("component-type/index.js", "component-clone/deps/type/index.js");
+    require.alias("bdd-flow/lib/bdd-flow/index.js", "bdd-flow/index.js");
     if (typeof exports == "object") {
         module.exports = require("bdd-flow");
     } else if (typeof define == "function" && define.amd) {
