@@ -9,7 +9,7 @@ chai.use(require('sinon-chai'));
 var bddflow = require('../../..');
 var Bddflow = bddflow.Bddflow;
 
-var requireComponent = bddflow.require;
+var requireComponent = bddflow.requireComponent;
 var Batch = requireComponent('batch');
 
 describe('Bddflow', function() {

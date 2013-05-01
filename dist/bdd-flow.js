@@ -341,7 +341,7 @@
         exports.extend = function(ext) {
             return extend(Bddflow.prototype, ext);
         };
-        exports.require = require;
+        exports.requireComponent = require;
         var Batch = require("batch");
         var clone = require("clone");
         var configurable = require("configurable.js");

@@ -15,22 +15,6 @@
       "version": "2.3.1",
       "from": "sinon-chai@2.3.1"
     },
-    "sinon": {
-      "version": "1.6.0",
-      "from": "sinon@1.6.0",
-      "dependencies": {
-        "buster-format": {
-          "version": "0.5.5",
-          "from": "buster-format@0.5.5",
-          "dependencies": {
-            "buster-core": {
-              "version": "0.6.4",
-              "from": "buster-core@0.6.4"
-            }
-          }
-        }
-      }
-    },
     "mocha": {
       "version": "1.9.0",
       "from": "mocha@1.9.0",
@@ -68,6 +52,22 @@
         "ms": {
           "version": "0.3.0",
           "from": "ms@0.3.0"
+        }
+      }
+    },
+    "sinon": {
+      "version": "1.6.0",
+      "from": "sinon@1.6.0",
+      "dependencies": {
+        "buster-format": {
+          "version": "0.5.5",
+          "from": "buster-format@0.5.5",
+          "dependencies": {
+            "buster-core": {
+              "version": "0.6.4",
+              "from": "buster-core@0.6.4"
+            }
+          }
         }
       }
     },
