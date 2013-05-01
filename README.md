@@ -104,45 +104,9 @@ flow
 
     npm install bdd-flow
 
-## Module API
+## API Documentation
 
-* `Bddflow`: Flow configuration and execution.
-* `create`: `new Bddflow()` wrapper
-
-## `Bddflow` API
-
-Optional:
-
-### `set(key, val)`
-
-* `{function} done`: Fires after flow completion.
-* `{function} itWrap`: `it()` callbacks will be executed inside this wrapper and "inherit" that context. For example, [conjure](https://github.com/codeactual/conjure) uses it to run every `it()` inside a [CasperJS](http://casperjs.org/) `then()` to inject the latter's API.
-* `{function} describeWrap`: Same behavior as `itWrap` for `describe()`.
-* `{RegExp} grep`: Limit execution to `it()` definitions whose "BDD path" matches the pattern. Example path from a script with nested `describe()` layers: `"my-lib MyClass #myMethod should validate X"`. (Cannot combine with `grepv`.)
-* `{RegExp} grepv`: Limit execution to `it()` definitions whose "BDD path" don't match the pattern. Example path from a script with nested `describe()` layers: `"my-lib MyClass #myMethod should validate X"`. (Cannot combine with `grep`.)
-
-### `addContextProp(key, val)`
-
-> Add a property to the initial hook/describe/it shared context.
-
-### `addRootDescribe(name, cb)`
-
-> Add a top-level describe().
-
-### `isRunning()`
-
-> Check if run() has been called.
-
-### `hideContextProp(type, key)`
-
-> Prevent a type of flow function from 'inheriting' specific context properties from enclosing/subsequently-executed flow functions.
-
-* Types: `it`, `hook`
-* Key: `RegExp` or `string` for an exact match.
-
-### `run()`
-
-> Run collected describe() layers.
+[Bddflow/Describe](docs/Bddflow.md)
 
 ## License
 

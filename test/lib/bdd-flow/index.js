@@ -98,7 +98,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should pass context from before() to it()', function(testDone) {
+  it('should pass context from #before to #it', function(testDone) {
     var self = this;
     var results = [];
 
@@ -118,7 +118,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should pass context from beforeEach() to it()', function(testDone) {
+  it('should pass context from #beforeEach to #it', function(testDone) {
     var self = this;
     var results = [];
 
@@ -138,7 +138,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should pass context from afterEach() to it()', function(testDone) {
+  it('should pass context from #afterEach to #it', function(testDone) {
     var self = this;
     var results = [];
 
@@ -159,7 +159,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should pass context from after() to it()', function(testDone) {
+  it('should pass context from #after to #it', function(testDone) {
     var self = this;
     var results = [];
 
@@ -182,7 +182,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should pass context from it() to it()', function(testDone) {
+  it('should pass context from #it to #it', function(testDone) {
     var self = this;
     var results = [];
 
@@ -245,7 +245,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should omit Describe methods non-describe() contexts', function(testDone) {
+  it('should omit Describe methods non-#describe contexts', function(testDone) {
     var self = this;
     var results = [];
 
@@ -288,7 +288,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should omit context props from it()', function(testDone) {
+  it('should omit context props from #it', function(testDone) {
     var self = this;
     var results = [];
 
@@ -375,7 +375,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should optionally wrap it() callbacks', function(testDone) {
+  it('should optionally wrap #it callbacks', function(testDone) {
     var wrapperContext = {fromWrap: 'wrapProp'};
     var actualMergedContext = {
       topLevel: undefined,
@@ -410,7 +410,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should optionally wrap describe() callbacks', function(testDone) {
+  it('should optionally wrap #describe callbacks', function(testDone) {
     var wrapperContext = {fromWrap: 'wrapProp'};
     var actualMergedContext = {
       topLevel: undefined,
@@ -438,7 +438,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should store describe() and it() names', function(testDone) {
+  it('should store #describe and #it names', function(testDone) {
     var self = this;
     var results = [];
 
@@ -499,7 +499,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should optionally filter it() execution by BDD path regex', function(testDone) {
+  it('should optionally filter #it execution by BDD path regex', function(testDone) {
     var self = this;
     var results;
 
@@ -580,7 +580,7 @@ describe('Bddflow', function() {
     batch.end(testDone);
   });
 
-  it('should optionally omit it() execution by BDD path regex', function(testDone) {
+  it('should optionally omit #it execution by BDD path regex', function(testDone) {
     var self = this;
     var results;
 

@@ -334,16 +334,14 @@
     });
     require.register("bdd-flow/lib/bdd-flow/index.js", function(exports, require, module) {
         "use strict";
-        module.exports = {
-            Bddflow: Bddflow,
-            create: function() {
-                return new Bddflow();
-            },
-            mixin: function(ext) {
-                extend(Bddflow.prototype, ext);
-            },
-            require: require
+        exports.Bddflow = Bddflow;
+        exports.create = function() {
+            return new Bddflow();
         };
+        exports.extend = function(ext) {
+            return extend(Bddflow.prototype, ext);
+        };
+        exports.require = require;
         var Batch = require("batch");
         var clone = require("clone");
         var configurable = require("configurable.js");
@@ -381,7 +379,7 @@
         Bddflow.prototype.addRootDescribe = function(name, cb) {
             var self = this;
             var desc = new Describe(name);
-            desc.describe(name, cb, true);
+            desc.describe(name, cb);
             this.rootDescribes.push(desc);
             return this;
         };
@@ -456,7 +454,7 @@
         Describe.prototype.it = function(name, cb) {
             this.steps.push(new ItCallback(name, cb));
         };
-        Describe.prototype.describe = function(name, cb, isRoot) {
+        Describe.prototype.describe = function(name, cb) {
             var self = this;
             var step = function(done) {
                 var desc = new Describe(name);
