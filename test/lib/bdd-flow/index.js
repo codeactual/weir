@@ -214,7 +214,6 @@ describe('Bddflow', function() {
       results.push(
         loc + ':' +
         [
-          typeof this.running,
           typeof this.settings,
           typeof this.set,
           typeof this.addRootDescribe
@@ -233,12 +232,12 @@ describe('Bddflow', function() {
       })
       .set('done', function() {
         results.should.deep.equal([
-          'b:undefined,undefined,undefined,undefined',
-          'be:undefined,undefined,undefined,undefined',
-          'i1:undefined,undefined,undefined,undefined',
-          'ae:undefined,undefined,undefined,undefined',
-          'd:undefined,undefined,undefined,undefined',
-          'a:undefined,undefined,undefined,undefined'
+          'b:undefined,undefined,undefined',
+          'be:undefined,undefined,undefined',
+          'i1:undefined,undefined,undefined',
+          'ae:undefined,undefined,undefined',
+          'd:undefined,undefined,undefined',
+          'a:undefined,undefined,undefined'
         ]);
         testDone();
       })
@@ -679,19 +678,5 @@ describe('Bddflow', function() {
         testDone();
       })
       .run();
-  });
-
-  it('should track running state', function(testDone) {
-    var self = this;
-
-    this.flow
-      .addRootDescribe('r', function() {})
-      .set('done', function() {
-        self.flow.isRunning().should.equal(true);
-        testDone();
-      });
-
-    this.flow.isRunning().should.equal(false);
-    this.flow.run();
   });
 });

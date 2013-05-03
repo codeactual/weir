@@ -368,7 +368,6 @@
             this.rootDescribes = [];
             this.batch = new Batch();
             this.seedProps = {};
-            this.running = false;
         }
         Bddflow.describeConfigKeys = [ "describeWrap", "itWrap", "omitContextRegex", "path", "grep", "grepv", "sharedContext" ];
         configurable(Bddflow.prototype);
@@ -390,12 +389,8 @@
             this.get("omitContextRegex")[type].push(regex);
             return this;
         };
-        Bddflow.prototype.isRunning = function() {
-            return this.running;
-        };
         Bddflow.prototype.run = function() {
             var self = this;
-            this.running = true;
             var batch = new Batch();
             batch.concurrency(1);
             this.set("sharedContext", this.seedProps);

@@ -9,7 +9,6 @@ _Source: [lib/bdd-flow/index.js](../lib/bdd-flow/index.js)_
 - [Bddflow.prototype.addContextProp](#bddflowprototypeaddcontextpropkey-val)
 - [Bddflow.prototype.addRootDescribe](#bddflowprototypeaddrootdescribename-cb)
 - [Bddflow.prototype.hideContextProp](#bddflowprototypehidecontextproptype-regex)
-- [Bddflow.prototype.isRunning](#bddflowprototypeisrunning)
 - [Bddflow.prototype.run](#bddflowprototyperun)
 - [Describe.prototype.it](#describeprototypeitname-cb)
 - [Describe.prototype.describe](#describeprototypedescribename-cb)
@@ -24,7 +23,7 @@ _Source: [lib/bdd-flow/index.js](../lib/bdd-flow/index.js)_
 
 # exports.create()
 
-> Create a new Bddflow.
+> Create a new [Bddflow](#bddflow).
 
 **Return:**
 
@@ -32,7 +31,7 @@ _Source: [lib/bdd-flow/index.js](../lib/bdd-flow/index.js)_
 
 # exports.extend(ext)
 
-> Extend Bddflow.prototype.
+> Extend [Bddflow](#bddflow).prototype.
 
 **Parameters:**
 
@@ -81,7 +80,6 @@ flow.addRootDescribe('subject', function() {
 - `{array} rootDescribe` Top-level `Describe` objects
 - `{object} batch` `Batch` instance used to run collected test steps
 - `{object} seedProps` Merged into initial hook/describe/it context
-- `{boolean} running` True after `run()` has been called
 
 # Bddflow.prototype.addContextProp(key, val)
 
@@ -122,14 +120,6 @@ from enclosing/subsequently-executed flow functions.
 **Return:**
 
 `{object}` this
-
-# Bddflow.prototype.isRunning()
-
-> Check if `run()` has been called.
-
-**Return:**
-
-`{boolean}`
 
 # Bddflow.prototype.run()
 
