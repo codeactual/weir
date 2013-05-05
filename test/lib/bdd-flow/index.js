@@ -720,7 +720,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should emit describe step events', function(testDone) {
+  it('should emit describe-step events', function(testDone) {
     var self = this;
     var actualEvents = [];
 
@@ -744,6 +744,57 @@ describe('Bddflow', function() {
     });
 
     this.flow.on('describePop', function(name) {
+      actualEvents.push({event: 'pop', name: name});
+    });
+
+    function noOp() {}
+
+    this.flow
+      .addRootDescribe('r1', function() {
+        self.defaultDescribe.call(this, noOp);
+      })
+      .addRootDescribe('r2', function() {
+        self.defaultDescribe.call(this, noOp);
+      })
+      .set('done', function() {
+        actualEvents.should.deep.equal(expectedEvents);
+        testDone();
+      })
+      .run();
+  });
+
+  it('should emit it-step events', function(testDone) {
+    var self = this;
+    var actualEvents = [];
+
+    var expectedEvents = [
+      {event: 'push', name: 'i1'},
+      {event: 'pop', name: 'i1'},
+      {event: 'push', name: 'i2'},
+      {event: 'pop', name: 'i2'},
+      {event: 'push', name: 'd1i1'},
+      {event: 'pop', name: 'd1i1'},
+      {event: 'push', name: 'd1i2'},
+      {event: 'pop', name: 'd1i2'},
+      {event: 'push', name: 'd1ai1'},
+      {event: 'pop', name: 'd1ai1'},
+      {event: 'push', name: 'i1'},
+      {event: 'pop', name: 'i1'},
+      {event: 'push', name: 'i2'},
+      {event: 'pop', name: 'i2'},
+      {event: 'push', name: 'd1i1'},
+      {event: 'pop', name: 'd1i1'},
+      {event: 'push', name: 'd1i2'},
+      {event: 'pop', name: 'd1i2'},
+      {event: 'push', name: 'd1ai1'},
+      {event: 'pop', name: 'd1ai1'}
+    ];
+
+    this.flow.on('itPush', function(name) {
+      actualEvents.push({event: 'push', name: name});
+    });
+
+    this.flow.on('itPop', function(name) {
       actualEvents.push({event: 'pop', name: name});
     });
 

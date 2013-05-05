@@ -94,6 +94,10 @@ flow.addRootDescribe('subject', function() {
   - `{string} name`
 - `describePop` Finished its collected steps, including nested `describe()`
   - `{string} name`
+- `itPush` About to start running its callback
+  - `{string} name`
+- `itPop` Its callback finished
+  - `{string} name`
 
 **See:**
 

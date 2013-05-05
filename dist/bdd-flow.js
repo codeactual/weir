@@ -544,8 +544,10 @@
                             });
                             batch.push(function(done) {
                                 var context = desc.getSharedContext("it");
+                                var emit = desc.get("emit");
                                 function asyncCb() {
                                     desc.extendSharedContext(context, "it");
+                                    emit("itPop", step.name);
                                     done();
                                 }
                                 var itWrap = desc.get("itWrap") || defItWrap;
@@ -554,6 +556,7 @@
                                     extend(context, wrapContext);
                                     addInternalProp(context, "name", step.name, true);
                                     addInternalProp(context, "path", itPath, true);
+                                    emit("itPush", step.name);
                                     if (step.cb.length) {
                                         step.cb.call(context, asyncCb);
                                     } else {
