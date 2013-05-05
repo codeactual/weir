@@ -369,7 +369,7 @@
         };
         function Bddflow() {
             this.settings = {
-                done: noOp,
+                done: bddflowNoOp,
                 itWrap: null,
                 describeWrap: null,
                 omitContextRegex: clone(defOmitContextRegex),
@@ -415,13 +415,13 @@
             var batch = new Batch();
             batch.concurrency(1);
             this.set("sharedContext", this.seedProps);
-            this.rootDescribes.forEach(function(desc) {
-                batch.push(function(taskDone) {
+            this.rootDescribes.forEach(function bddflowEachRootDescribe(desc) {
+                batch.push(function bddflowBatchPushRootDescribe(taskDone) {
                     self.set("path", []);
-                    Bddflow.describeConfigKeys.forEach(function(key) {
+                    Bddflow.describeConfigKeys.forEach(function bddflowForEachConfigKey(key) {
                         desc.set(key, self.get(key));
                     });
-                    runSteps(desc.steps, taskDone);
+                    bddflowRunStepsInBatch(desc.steps, taskDone);
                 });
             });
             batch.end(this.get("done"));
@@ -452,9 +452,9 @@
         Describe.prototype.filterProps = function(obj, type) {
             var omitContextRegex = this.get("omitContextRegex");
             var regex = omitContextRegex.all.concat(omitContextRegex[type]);
-            return Object.keys(obj).reduce(function(memo, key) {
+            return Object.keys(obj).reduce(function bddflowReduceFilterProps(memo, key) {
                 var omit = false;
-                regex.forEach(function(re) {
+                regex.forEach(function bddflowForEachFilterPropsRegex(re) {
                     omit = omit || re.test(key);
                 });
                 if (omit) {
@@ -474,13 +474,13 @@
             var self = this;
             var step = function(done) {
                 var desc = new Describe(name);
-                Bddflow.describeConfigKeys.forEach(function(key) {
+                Bddflow.describeConfigKeys.forEach(function bddflowForEachConfigKey(key) {
                     desc.set(key, self.get(key));
                 });
                 var path = desc.get("path");
                 path.push(name);
-                var describeWrap = desc.get("describeWrap") || defDescribeWrap;
-                describeWrap(name, function() {
+                var describeWrap = desc.get("describeWrap") || bddflowDefDescribeWrap;
+                describeWrap(name, function bddflowDescribeWrap() {
                     var wrapContext = this || {};
                     var mergedContext = desc.extendSharedContext(wrapContext, "describe");
                     mergedContext.describe = bind(desc, desc.describe);
@@ -489,12 +489,12 @@
                     mergedContext.beforeEach = bind(desc, desc.beforeEach);
                     mergedContext.after = bind(desc, desc.after);
                     mergedContext.afterEach = bind(desc, desc.afterEach);
-                    addInternalProp(mergedContext, "name", name);
+                    bddflowAddInternalProp(mergedContext, "name", name);
                     cb.call(mergedContext);
                 });
                 desc.pushStep();
                 var batch = new Batch();
-                batch.push(function(done) {
+                batch.push(function bddflowBatchPushBeforeHook(done) {
                     function asyncCb() {
                         desc.extendSharedContext(context, "hook");
                         done();
@@ -508,8 +508,8 @@
                         asyncCb();
                     }
                 });
-                batch.push(function(done) {
-                    desc.steps = desc.steps.map(function(step) {
+                batch.push(function bddflowBatchPushItOrDescribe(done) {
+                    desc.steps = desc.steps.map(function bddflowMapDescribeSteps(step) {
                         if (step instanceof DescribeCallback) {
                             var context = desc.getSharedContext("describe");
                             return new DescribeCallback(step.name, bind(context, step.cb));
@@ -519,16 +519,16 @@
                         var grepv = desc.get("grepv");
                         if (grepv) {
                             if (grepv.test(itPath.join(" "))) {
-                                return new ItCallback(step.name, batchNoOp);
+                                return new ItCallback(step.name, bddflowBatchNoOp);
                             }
                         } else if (grep) {
                             if (!grep.test(itPath.join(" "))) {
-                                return new ItCallback(step.name, batchNoOp);
+                                return new ItCallback(step.name, bddflowBatchNoOp);
                             }
                         }
-                        return new ItCallback(step.name, function(done) {
+                        return new ItCallback(step.name, function bddflowItCallback(done) {
                             var batch = new Batch();
-                            batch.push(function(done) {
+                            batch.push(function bddflowBatchPushBeforeEach(done) {
                                 function asyncCb() {
                                     desc.extendSharedContext(context, "hook");
                                     done();
@@ -542,7 +542,7 @@
                                     asyncCb();
                                 }
                             });
-                            batch.push(function(done) {
+                            batch.push(function bddflowBatchPushIt(done) {
                                 var context = desc.getSharedContext("it");
                                 var emit = desc.get("emit");
                                 function asyncCb() {
@@ -550,12 +550,12 @@
                                     emit("itPop", step.name);
                                     done();
                                 }
-                                var itWrap = desc.get("itWrap") || defItWrap;
-                                itWrap(step.name, function() {
+                                var itWrap = desc.get("itWrap") || bddflowDefItWrap;
+                                itWrap(step.name, function bddflowItWrap() {
                                     var wrapContext = this || {};
                                     extend(context, wrapContext);
-                                    addInternalProp(context, "name", step.name, true);
-                                    addInternalProp(context, "path", itPath, true);
+                                    bddflowAddInternalProp(context, "name", step.name, true);
+                                    bddflowAddInternalProp(context, "path", itPath, true);
                                     emit("itPush", step.name);
                                     if (step.cb.length) {
                                         step.cb.call(context, asyncCb);
@@ -565,7 +565,7 @@
                                     }
                                 });
                             });
-                            batch.push(function(done) {
+                            batch.push(function bddflowBatchPushAfterEach(done) {
                                 function asyncCb() {
                                     desc.extendSharedContext(context, "hook");
                                     done();
@@ -583,9 +583,9 @@
                             batch.end(done);
                         });
                     });
-                    runSteps(desc.steps, done);
+                    bddflowRunStepsInBatch(desc.steps, done);
                 });
-                batch.push(function(done) {
+                batch.push(function bddflowBatchPushAfter(done) {
                     function asyncCb() {
                         desc.extendSharedContext(context, "hook");
                         done();
@@ -600,7 +600,7 @@
                     }
                 });
                 batch.concurrency(1);
-                batch.end(function() {
+                batch.end(function bddFlowEndDescribeBatch() {
                     desc.popStep();
                     done();
                 });
@@ -637,28 +637,28 @@
             this.name = name;
             this.cb = cb;
         }
-        function runSteps(steps, cb) {
+        function bddflowRunStepsInBatch(steps, cb) {
             var batch = new Batch();
             batch.concurrency(1);
-            steps.forEach(function(step) {
+            steps.forEach(function bddflowForEachStep(step) {
                 batch.push(step.cb);
             });
             batch.end(cb);
         }
-        function noOp() {}
-        function batchNoOp(taskDone) {
+        function bddflowNoOp() {}
+        function bddflowBatchNoOp(taskDone) {
             taskDone();
         }
-        function defItWrap(name, cb) {
+        function bddflowDefItWrap(name, cb) {
             cb();
         }
-        function defDescribeWrap(name, cb) {
+        function bddflowDefDescribeWrap(name, cb) {
             cb();
         }
-        function delInternalProp(obj, key) {
+        function bddflowDelInternalProp(obj, key) {
             delete obj["__conjure__" + key];
         }
-        function addInternalProp(obj, key, val, writable) {
+        function bddflowAddInternalProp(obj, key, val, writable) {
             Object.defineProperty(obj, "__conjure__" + key, {
                 value: val,
                 enumerable: false,
