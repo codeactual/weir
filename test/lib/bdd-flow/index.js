@@ -719,4 +719,47 @@ describe('Bddflow', function() {
       })
       .run();
   });
+
+  it('should emit describe step events', function(testDone) {
+    var self = this;
+    var actualEvents = [];
+
+    var expectedEvents = [
+      {event: 'push', name: 'r1'},
+      {event: 'push', name: 'd1'},
+      {event: 'push', name: 'd1a'},
+      {event: 'pop', name: 'd1a'},
+      {event: 'pop', name: 'd1'},
+      {event: 'pop', name: 'r1'},
+      {event: 'push', name: 'r2'},
+      {event: 'push', name: 'd1'},
+      {event: 'push', name: 'd1a'},
+      {event: 'pop', name: 'd1a'},
+      {event: 'pop', name: 'd1'},
+      {event: 'pop', name: 'r2'}
+    ];
+
+    this.flow.on('describePush', function(name) {
+      actualEvents.push({event: 'push', name: name});
+    });
+
+    this.flow.on('describePop', function(name) {
+      actualEvents.push({event: 'pop', name: name});
+    });
+
+    function noOp() {}
+
+    this.flow
+      .addRootDescribe('r1', function() {
+        self.defaultDescribe.call(this, noOp);
+      })
+      .addRootDescribe('r2', function() {
+        self.defaultDescribe.call(this, noOp);
+      })
+      .set('done', function() {
+        actualEvents.should.deep.equal(expectedEvents);
+        testDone();
+      })
+      .run();
+  });
 });

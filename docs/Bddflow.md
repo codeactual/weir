@@ -84,6 +84,21 @@ flow.addRootDescribe('subject', function() {
 - `{object} batch` `Batch` instance used to run collected test steps
 - `{object} seedProps` Merged into initial hook/describe/it context
 
+**Inherits:**
+
+- `emitter` component
+
+**Emits events:**
+
+- `describePush` About to start running its collected steps
+  - `{string} name`
+- `describePop` Finished its collected steps, including nested `describe()`
+  - `{string} name`
+
+**See:**
+
+- [emitter](https://github.com/component/emitter)
+
 # Bddflow.prototype.addContextProp(key, val)
 
 > Add a property to the initial hook/describe/it shared context.

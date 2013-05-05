@@ -126,79 +126,6 @@
             return object;
         };
     });
-    require.register("component-indexof/index.js", function(exports, require, module) {
-        var indexOf = [].indexOf;
-        module.exports = function(arr, obj) {
-            if (indexOf) return arr.indexOf(obj);
-            for (var i = 0; i < arr.length; ++i) {
-                if (arr[i] === obj) return i;
-            }
-            return -1;
-        };
-    });
-    require.register("component-emitter/index.js", function(exports, require, module) {
-        var index = require("indexof");
-        module.exports = Emitter;
-        function Emitter(obj) {
-            if (obj) return mixin(obj);
-        }
-        function mixin(obj) {
-            for (var key in Emitter.prototype) {
-                obj[key] = Emitter.prototype[key];
-            }
-            return obj;
-        }
-        Emitter.prototype.on = function(event, fn) {
-            this._callbacks = this._callbacks || {};
-            (this._callbacks[event] = this._callbacks[event] || []).push(fn);
-            return this;
-        };
-        Emitter.prototype.once = function(event, fn) {
-            var self = this;
-            this._callbacks = this._callbacks || {};
-            function on() {
-                self.off(event, on);
-                fn.apply(this, arguments);
-            }
-            fn._off = on;
-            this.on(event, on);
-            return this;
-        };
-        Emitter.prototype.off = Emitter.prototype.removeListener = Emitter.prototype.removeAllListeners = function(event, fn) {
-            this._callbacks = this._callbacks || {};
-            if (0 == arguments.length) {
-                this._callbacks = {};
-                return this;
-            }
-            var callbacks = this._callbacks[event];
-            if (!callbacks) return this;
-            if (1 == arguments.length) {
-                delete this._callbacks[event];
-                return this;
-            }
-            var i = index(callbacks, fn._off || fn);
-            if (~i) callbacks.splice(i, 1);
-            return this;
-        };
-        Emitter.prototype.emit = function(event) {
-            this._callbacks = this._callbacks || {};
-            var args = [].slice.call(arguments, 1), callbacks = this._callbacks[event];
-            if (callbacks) {
-                callbacks = callbacks.slice(0);
-                for (var i = 0, len = callbacks.length; i < len; ++i) {
-                    callbacks[i].apply(this, args);
-                }
-            }
-            return this;
-        };
-        Emitter.prototype.listeners = function(event) {
-            this._callbacks = this._callbacks || {};
-            return this._callbacks[event] || [];
-        };
-        Emitter.prototype.hasListeners = function(event) {
-            return !!this.listeners(event).length;
-        };
-    });
     require.register("visionmedia-batch/index.js", function(exports, require, module) {
         try {
             var EventEmitter = require("events").EventEmitter;
@@ -332,6 +259,79 @@
             }
         }
     });
+    require.register("component-indexof/index.js", function(exports, require, module) {
+        var indexOf = [].indexOf;
+        module.exports = function(arr, obj) {
+            if (indexOf) return arr.indexOf(obj);
+            for (var i = 0; i < arr.length; ++i) {
+                if (arr[i] === obj) return i;
+            }
+            return -1;
+        };
+    });
+    require.register("component-emitter/index.js", function(exports, require, module) {
+        var index = require("indexof");
+        module.exports = Emitter;
+        function Emitter(obj) {
+            if (obj) return mixin(obj);
+        }
+        function mixin(obj) {
+            for (var key in Emitter.prototype) {
+                obj[key] = Emitter.prototype[key];
+            }
+            return obj;
+        }
+        Emitter.prototype.on = function(event, fn) {
+            this._callbacks = this._callbacks || {};
+            (this._callbacks[event] = this._callbacks[event] || []).push(fn);
+            return this;
+        };
+        Emitter.prototype.once = function(event, fn) {
+            var self = this;
+            this._callbacks = this._callbacks || {};
+            function on() {
+                self.off(event, on);
+                fn.apply(this, arguments);
+            }
+            fn._off = on;
+            this.on(event, on);
+            return this;
+        };
+        Emitter.prototype.off = Emitter.prototype.removeListener = Emitter.prototype.removeAllListeners = function(event, fn) {
+            this._callbacks = this._callbacks || {};
+            if (0 == arguments.length) {
+                this._callbacks = {};
+                return this;
+            }
+            var callbacks = this._callbacks[event];
+            if (!callbacks) return this;
+            if (1 == arguments.length) {
+                delete this._callbacks[event];
+                return this;
+            }
+            var i = index(callbacks, fn._off || fn);
+            if (~i) callbacks.splice(i, 1);
+            return this;
+        };
+        Emitter.prototype.emit = function(event) {
+            this._callbacks = this._callbacks || {};
+            var args = [].slice.call(arguments, 1), callbacks = this._callbacks[event];
+            if (callbacks) {
+                callbacks = callbacks.slice(0);
+                for (var i = 0, len = callbacks.length; i < len; ++i) {
+                    callbacks[i].apply(this, args);
+                }
+            }
+            return this;
+        };
+        Emitter.prototype.listeners = function(event) {
+            this._callbacks = this._callbacks || {};
+            return this._callbacks[event] || [];
+        };
+        Emitter.prototype.hasListeners = function(event) {
+            return !!this.listeners(event).length;
+        };
+    });
     require.register("bdd-flow/lib/bdd-flow/index.js", function(exports, require, module) {
         "use strict";
         exports.Bddflow = Bddflow;
@@ -345,6 +345,7 @@
         var Batch = require("batch");
         var clone = require("clone");
         var configurable = require("configurable.js");
+        var emitter = require("emitter");
         var extend = require("extend");
         var flowFnRegex = /^(it|describe|before|beforeEach|after|afterEach)$/;
         var defOmitContextRegex = {
@@ -366,14 +367,16 @@
                 sharedContext: {},
                 stats: {
                     depth: 0
-                }
+                },
+                emit: this.emit.bind(this)
             };
             this.rootDescribes = [];
             this.batch = new Batch();
             this.seedProps = {};
         }
-        Bddflow.describeConfigKeys = [ "describeWrap", "itWrap", "omitContextRegex", "path", "grep", "grepv", "sharedContext", "stats" ];
+        Bddflow.describeConfigKeys = [ "describeWrap", "emit", "itWrap", "omitContextRegex", "path", "grep", "grepv", "sharedContext", "stats" ];
         configurable(Bddflow.prototype);
+        emitter(Bddflow.prototype);
         Bddflow.prototype.addContextProp = function(key, val) {
             this.seedProps[key] = val;
             return this;
@@ -602,14 +605,18 @@
             this.hooks.afterEach = cb;
         };
         Describe.prototype.pushStep = function() {
+            var emit = this.get("emit");
             var stats = this.get("stats");
             stats.depth++;
             this.set("stats", stats);
+            emit("describePush", this.name);
         };
         Describe.prototype.popStep = function() {
+            var emit = this.get("emit");
             var stats = this.get("stats");
             stats.depth--;
             this.set("stats", stats);
+            emit("describePop", this.name);
         };
         function DescribeCallback(name, cb) {
             this.name = name;
@@ -652,6 +659,8 @@
     require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
     require.alias("component-clone/index.js", "bdd-flow/deps/clone/index.js");
     require.alias("component-type/index.js", "component-clone/deps/type/index.js");
+    require.alias("component-emitter/index.js", "bdd-flow/deps/emitter/index.js");
+    require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
     require.alias("bdd-flow/lib/bdd-flow/index.js", "bdd-flow/index.js");
     if (typeof exports == "object") {
         module.exports = require("bdd-flow");
