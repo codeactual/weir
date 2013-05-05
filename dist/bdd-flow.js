@@ -363,13 +363,16 @@
                 path: [],
                 grep: /.?/,
                 grepv: null,
-                sharedContext: {}
+                sharedContext: {},
+                stats: {
+                    depth: 0
+                }
             };
             this.rootDescribes = [];
             this.batch = new Batch();
             this.seedProps = {};
         }
-        Bddflow.describeConfigKeys = [ "describeWrap", "itWrap", "omitContextRegex", "path", "grep", "grepv", "sharedContext" ];
+        Bddflow.describeConfigKeys = [ "describeWrap", "itWrap", "omitContextRegex", "path", "grep", "grepv", "sharedContext", "stats" ];
         configurable(Bddflow.prototype);
         Bddflow.prototype.addContextProp = function(key, val) {
             this.seedProps[key] = val;
@@ -381,6 +384,9 @@
             desc.describe(name, cb);
             this.rootDescribes.push(desc);
             return this;
+        };
+        Bddflow.prototype.currentDepth = function() {
+            return this.get("stats").depth;
         };
         Bddflow.prototype.hideContextProp = function(type, regex) {
             if (typeof regex === "string") {
@@ -471,6 +477,7 @@
                     addInternalProp(mergedContext, "name", name);
                     cb.call(mergedContext);
                 });
+                desc.pushStep();
                 var batch = new Batch();
                 batch.push(function(done) {
                     function asyncCb() {
@@ -575,7 +582,10 @@
                     }
                 });
                 batch.concurrency(1);
-                batch.end(done);
+                batch.end(function() {
+                    desc.popStep();
+                    done();
+                });
             };
             this.steps.push(new DescribeCallback(name, step));
         };
@@ -590,6 +600,16 @@
         };
         Describe.prototype.afterEach = function(cb) {
             this.hooks.afterEach = cb;
+        };
+        Describe.prototype.pushStep = function() {
+            var stats = this.get("stats");
+            stats.depth++;
+            this.set("stats", stats);
+        };
+        Describe.prototype.popStep = function() {
+            var stats = this.get("stats");
+            stats.depth--;
+            this.set("stats", stats);
         };
         function DescribeCallback(name, cb) {
             this.name = name;

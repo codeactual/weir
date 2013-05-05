@@ -8,6 +8,7 @@ _Source: [lib/bdd-flow/index.js](../lib/bdd-flow/index.js)_
 - [Bddflow](#bddflow)
 - [Bddflow.prototype.addContextProp](#bddflowprototypeaddcontextpropkey-val)
 - [Bddflow.prototype.addRootDescribe](#bddflowprototypeaddrootdescribename-cb)
+- [Bddflow.prototype.currentDepth](#bddflowprototypecurrentdepth)
 - [Bddflow.prototype.hideContextProp](#bddflowprototypehidecontextproptype-regex)
 - [Bddflow.prototype.run](#bddflowprototyperun)
 - [Describe.prototype.it](#describeprototypeitname-cb)
@@ -74,6 +75,8 @@ flow.addRootDescribe('subject', function() {
 - `{regexp} grep` Filter `it()` execution by "current path + `it()` name"
 - `{regexp} grepv` Omit `it()` execution by "current path + `it()` name"
 - `{object} sharedContext` hook/describe/it context that is 'inherited'
+- `{object} stats`
+  - `{number} depth` Current stack depth during test run
 
 **Properties:**
 
@@ -106,6 +109,18 @@ flow.addRootDescribe('subject', function() {
 **Return:**
 
 `{object}` this
+
+# Bddflow.prototype.currentDepth()
+
+> Get the current stack depth.
+
+**Return:**
+
+`{number}`
+
+- `0` = every root `describe()`
+- Each deeper `describe()` is 1 more than its parent `describe()`.
+- Each `it()` is 1 more than its parent `describe()`.
 
 # Bddflow.prototype.hideContextProp(type, regex)
 

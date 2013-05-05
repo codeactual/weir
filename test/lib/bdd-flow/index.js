@@ -679,4 +679,44 @@ describe('Bddflow', function() {
       })
       .run();
   });
+
+  it('should track stack depth', function(testDone) {
+    var self = this;
+    var actualStats = [];
+
+    var expectedStats = [
+      {loc: 'b', depth: 1},
+      {loc: 'be', depth: 1},
+      {loc: 'i1', depth: 1},
+      {loc: 'ae', depth: 1},
+      {loc: 'be', depth: 1},
+      {loc: 'i2', depth: 1},
+      {loc: 'ae', depth: 1},
+      {loc: 'd1b', depth: 2},
+      {loc: 'd1be', depth: 2},
+      {loc: 'd1i1', depth: 2},
+      {loc: 'd1ae', depth: 2},
+      {loc: 'd1be', depth: 2},
+      {loc: 'd1i2', depth: 2},
+      {loc: 'd1ae', depth: 2},
+      {loc: 'd1ai1', depth: 3},
+      {loc: 'd1a', depth: 2},
+      {loc: 'a', depth: 1}
+    ];
+
+    function log(loc) { actualStats.push({loc: loc, depth: self.flow.currentDepth()}); }
+
+    this.flow
+      .addRootDescribe('r1', function() {
+        self.defaultDescribe.call(this, log);
+      })
+      .addRootDescribe('r2', function() {
+        self.defaultDescribe.call(this, log);
+      })
+      .set('done', function() {
+        actualStats.should.deep.equal(expectedStats.concat(expectedStats));
+        testDone();
+      })
+      .run();
+  });
 });
