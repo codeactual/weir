@@ -551,19 +551,30 @@
                                     done();
                                 }
                                 var itWrap = desc.get("itWrap") || bddflowDefItWrap;
-                                itWrap(step.name, function bddflowItWrap() {
-                                    var wrapContext = this || {};
-                                    extend(context, wrapContext);
-                                    bddflowAddInternalProp(context, "name", step.name, true);
-                                    bddflowAddInternalProp(context, "path", itPath, true);
-                                    emit("itPush", step.name);
-                                    if (step.cb.length) {
-                                        step.cb.call(context, asyncCb);
-                                    } else {
+                                if (itWrap.length == 3) {
+                                    itWrap(step.name, function bddflowItWrapAsync() {
+                                        var wrapContext = this || {};
+                                        extend(context, wrapContext);
+                                        bddflowAddInternalProp(context, "name", step.name, true);
+                                        bddflowAddInternalProp(context, "path", itPath, true);
+                                        emit("itPush", step.name);
                                         step.cb.call(context);
-                                        asyncCb();
-                                    }
-                                });
+                                    }, asyncCb);
+                                } else {
+                                    itWrap(step.name, function bddflowItWrap() {
+                                        var wrapContext = this || {};
+                                        extend(context, wrapContext);
+                                        bddflowAddInternalProp(context, "name", step.name, true);
+                                        bddflowAddInternalProp(context, "path", itPath, true);
+                                        emit("itPush", step.name);
+                                        if (step.cb.length) {
+                                            step.cb.call(context, asyncCb);
+                                        } else {
+                                            step.cb.call(context);
+                                            asyncCb();
+                                        }
+                                    });
+                                }
                             });
                             batch.push(function bddflowBatchPushAfterEach(done) {
                                 function asyncCb() {
@@ -600,7 +611,7 @@
                     }
                 });
                 batch.concurrency(1);
-                batch.end(function bddFlowEndDescribeBatch() {
+                batch.end(function bddflowEndDescribeBatch() {
                     desc.popStep();
                     done();
                 });

@@ -409,6 +409,24 @@ describe('Bddflow', function() {
       .run();
   });
 
+  it('should optionally wrap #it callbacks with async advance', function(testDone) {
+    function itWrap(name, cb, advanceToNextStep) {
+      cb.call();
+      advanceToNextStep();
+    }
+
+    this.flow
+      .set('itWrap', itWrap)
+      .addRootDescribe('subject', function() {
+        this.it('expectation', function() {});
+      })
+      .set('done', function() {
+        testDone();
+      })
+      .run();
+  });
+
+
   it('should optionally wrap #describe callbacks', function(testDone) {
     var wrapperContext = {fromWrap: 'wrapProp'};
     var actualMergedContext = {

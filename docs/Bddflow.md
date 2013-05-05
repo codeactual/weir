@@ -66,7 +66,10 @@ flow.addRootDescribe('subject', function() {
 
 - `{function} done` Callback fired after run finishes
 - `{function} itWrap` `it()` wrapper from which context can be 'inherited'
+  - Receives: (`name`, `cb`)
+  - Or for auto-detected async, receives: (`name`, `cb`, `done`)
 - `{function} describeWrap` `describe()` wrapper from which context can be 'inherited'
+  - Receives: (`name`, `cb`)
 - `{object} omitContextRegex` Property name patterns
   - Ex. used to omit properties from propagating between `it()` handlers
   - Indexed by type: `all`, `describe`, `hook`, `it`, `rootDescribe`
