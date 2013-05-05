@@ -9,7 +9,8 @@
     "codeactual/extend": "0.1.0",
     "visionmedia/batch": "0.3.2",
     "component/clone": "0.1.0",
-    "component/emitter": "1.0.0"
+    "component/emitter": "1.0.0",
+    "component/bind": "9a55368"
   },
   "development": {},
   "main": "lib/bdd-flow/index.js",
