@@ -1,6 +1,6 @@
 # 0.1.0
 
-* Initial `Bddflow` API: `addContextProp()`, `addRootDescribe()`, `hideContextProp()`, `run()`.
+* Initial `Weir` API: `addContextProp()`, `addRootDescribe()`, `hideContextProp()`, `run()`.
 * Nested `describe()`
 * Sync or async `it()`
 * `before/beforeEach/after/afterEach` hooks, sync or async

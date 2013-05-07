@@ -1,1 +1,1 @@
-module.exports = require('./dist/bdd-flow');
+module.exports = require('./dist/weir');

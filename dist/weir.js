@@ -343,14 +343,14 @@
             };
         };
     });
-    require.register("bdd-flow/lib/bdd-flow/index.js", function(exports, require, module) {
+    require.register("weir/lib/weir/index.js", function(exports, require, module) {
         "use strict";
-        exports.Bddflow = Bddflow;
+        exports.Weir = Weir;
         exports.create = function() {
-            return new Bddflow();
+            return new Weir();
         };
         exports.extend = function(ext) {
-            return extend(Bddflow.prototype, ext);
+            return extend(Weir.prototype, ext);
         };
         exports.requireComponent = require;
         var Batch = require("batch");
@@ -367,9 +367,9 @@
             it: [ flowFnRegex ],
             rootDescribe: []
         };
-        function Bddflow() {
+        function Weir() {
             this.settings = {
-                done: bddflowNoOp,
+                done: weirNoOp,
                 itWrap: null,
                 describeWrap: null,
                 omitContextRegex: clone(defOmitContextRegex),
@@ -386,54 +386,54 @@
             this.batch = new Batch();
             this.seedProps = {};
         }
-        Bddflow.describeConfigKeys = [ "describeWrap", "emit", "itWrap", "omitContextRegex", "path", "grep", "grepv", "sharedContext", "stats" ];
-        configurable(Bddflow.prototype);
-        emitter(Bddflow.prototype);
-        Bddflow.prototype.addContextProp = function(key, val) {
+        Weir.describeConfigKeys = [ "describeWrap", "emit", "itWrap", "omitContextRegex", "path", "grep", "grepv", "sharedContext", "stats" ];
+        configurable(Weir.prototype);
+        emitter(Weir.prototype);
+        Weir.prototype.addContextProp = function(key, val) {
             this.seedProps[key] = val;
             return this;
         };
-        Bddflow.prototype.addRootDescribe = function(name, cb) {
+        Weir.prototype.addRootDescribe = function(name, cb) {
             var self = this;
             var desc = new Describe(name);
             desc.describe(name, cb);
             this.rootDescribes.push(desc);
             return this;
         };
-        Bddflow.prototype.currentDepth = function() {
+        Weir.prototype.currentDepth = function() {
             return this.get("stats").depth;
         };
-        Bddflow.prototype.hideContextProp = function(type, regex) {
+        Weir.prototype.hideContextProp = function(type, regex) {
             if (typeof regex === "string") {
                 regex = new RegExp("^" + regex + "$");
             }
             this.get("omitContextRegex")[type].push(regex);
             return this;
         };
-        Bddflow.prototype.run = function() {
+        Weir.prototype.run = function() {
             var self = this;
             var batch = new Batch();
             batch.concurrency(1);
             this.set("sharedContext", this.seedProps);
-            this.rootDescribes.forEach(function bddflowEachRootDescribe(desc) {
-                batch.push(function bddflowBatchPushRootDescribe(taskDone) {
+            this.rootDescribes.forEach(function weirEachRootDescribe(desc) {
+                batch.push(function weirBatchPushRootDescribe(taskDone) {
                     self.set("path", []);
-                    Bddflow.describeConfigKeys.forEach(function bddflowForEachConfigKey(key) {
+                    Weir.describeConfigKeys.forEach(function weirForEachConfigKey(key) {
                         desc.set(key, self.get(key));
                     });
-                    bddflowRunStepsInBatch(desc.steps, taskDone);
+                    weirRunStepsInBatch(desc.steps, taskDone);
                 });
             });
             batch.end(this.get("done"));
         };
-        Bddflow.defaultHookImpl = function(done) {
+        Weir.defaultHookImpl = function(done) {
             done();
         };
         function HookSet() {
-            this.before = Bddflow.defaultHookImpl;
-            this.beforeEach = Bddflow.defaultHookImpl;
-            this.after = Bddflow.defaultHookImpl;
-            this.afterEach = Bddflow.defaultHookImpl;
+            this.before = Weir.defaultHookImpl;
+            this.beforeEach = Weir.defaultHookImpl;
+            this.after = Weir.defaultHookImpl;
+            this.afterEach = Weir.defaultHookImpl;
         }
         function ItCallback(name, cb) {
             this.name = name;
@@ -447,7 +447,7 @@
         }
         configurable(Describe.prototype);
         Describe.copyConfig = function(src, dest) {
-            Bddflow.describeConfigKeys.forEach(function bddflowDescribeCopyConfigIter(key) {
+            Weir.describeConfigKeys.forEach(function weirDescribeCopyConfigIter(key) {
                 dest.set(key, src.get(key));
             });
         };
@@ -460,12 +460,12 @@
                 var batch = new Batch();
                 batch.concurrency(1);
                 batch.push(bind(desc, desc.beforeTask));
-                batch.push(function bddflowRunNestedDescribeSteps(done) {
+                batch.push(function weirRunNestedDescribeSteps(done) {
                     desc.steps = desc.steps.map(bind(desc, desc.prepareSteps));
-                    bddflowRunStepsInBatch(desc.steps, done);
+                    weirRunStepsInBatch(desc.steps, done);
                 });
                 batch.push(bind(desc, desc.afterTask));
-                batch.end(function bddflowEndDescribeBatch() {
+                batch.end(function weirEndDescribeBatch() {
                     desc.popStep();
                     taskDone();
                 });
@@ -477,9 +477,9 @@
         Describe.prototype.filterProps = function(obj, type) {
             var omitContextRegex = this.get("omitContextRegex");
             var regex = omitContextRegex.all.concat(omitContextRegex[type]);
-            return Object.keys(obj).reduce(function bddflowReduceFilterProps(memo, key) {
+            return Object.keys(obj).reduce(function weirReduceFilterProps(memo, key) {
                 var omit = false;
-                regex.forEach(function bddflowForEachFilterPropsRegex(re) {
+                regex.forEach(function weirForEachFilterPropsRegex(re) {
                     omit = omit || re.test(key);
                 });
                 if (omit) {
@@ -504,14 +504,14 @@
             var grepv = this.get("grepv");
             if (grepv) {
                 if (grepv.test(itPath.join(" "))) {
-                    return new ItCallback(step.name, bddflowBatchNoOp);
+                    return new ItCallback(step.name, weirBatchNoOp);
                 }
             } else if (grep) {
                 if (!grep.test(itPath.join(" "))) {
-                    return new ItCallback(step.name, bddflowBatchNoOp);
+                    return new ItCallback(step.name, weirBatchNoOp);
                 }
             }
-            return new ItCallback(step.name, function bddflowItCallback(done) {
+            return new ItCallback(step.name, function weirItCallback(done) {
                 var batch = new Batch();
                 batch.push(bind(self, self.beforeEachTask));
                 batch.push(bind(self, self.itTask, step, itPath));
@@ -524,8 +524,8 @@
             var self = this;
             var path = this.get("path");
             path.push(name);
-            var describeWrap = this.get("describeWrap") || bddflowDefDescribeWrap;
-            describeWrap(name, function bddflowDescribeWrap() {
+            var describeWrap = this.get("describeWrap") || weirDefDescribeWrap;
+            describeWrap(name, function weirDescribeWrap() {
                 var wrapContext = this || {};
                 var mergedContext = self.extendSharedContext(wrapContext, "describe");
                 mergedContext.describe = bind(self, self.describe);
@@ -534,7 +534,7 @@
                 mergedContext.beforeEach = bind(self, self.beforeEach);
                 mergedContext.after = bind(self, self.after);
                 mergedContext.afterEach = bind(self, self.afterEach);
-                bddflowAddInternalProp(mergedContext, "name", name);
+                weirAddInternalProp(mergedContext, "name", name);
                 cb.call(mergedContext);
                 self.pushStep();
             });
@@ -552,15 +552,15 @@
             var self = this;
             var hook = this.hooks.before;
             var context = this.getSharedContext("hook");
-            function bddflowBeforeDone() {
+            function weirBeforeDone() {
                 self.extendSharedContext(context, "hook");
                 taskDone();
             }
             if (hook.length) {
-                this.hooks.before.call(context, bddflowBeforeDone);
+                this.hooks.before.call(context, weirBeforeDone);
             } else {
                 this.hooks.before.call(context);
-                bddflowBeforeDone();
+                weirBeforeDone();
             }
         };
         Describe.prototype.beforeEach = function(cb) {
@@ -570,15 +570,15 @@
             var self = this;
             var hook = this.hooks.beforeEach;
             var context = this.getSharedContext("hook");
-            function bddflowBeforeEachDone() {
+            function weirBeforeEachDone() {
                 self.extendSharedContext(context, "hook");
                 taskDone();
             }
             if (hook.length) {
-                this.hooks.beforeEach.call(context, bddflowBeforeEachDone);
+                this.hooks.beforeEach.call(context, weirBeforeEachDone);
             } else {
                 this.hooks.beforeEach.call(context);
-                bddflowBeforeEachDone();
+                weirBeforeEachDone();
             }
         };
         Describe.prototype.after = function(cb) {
@@ -588,15 +588,15 @@
             var self = this;
             var hook = this.hooks.after;
             var context = this.getSharedContext("hook");
-            function bddflowAfterDone() {
+            function weirAfterDone() {
                 self.extendSharedContext(context, "hook");
                 taskDone();
             }
             if (hook.length) {
-                this.hooks.after.call(context, bddflowAfterDone);
+                this.hooks.after.call(context, weirAfterDone);
             } else {
                 this.hooks.after.call(context);
-                bddflowAfterDone();
+                weirAfterDone();
             }
         };
         Describe.prototype.afterEach = function(cb) {
@@ -606,48 +606,48 @@
             var self = this;
             var hook = this.hooks.afterEach;
             var context = this.getSharedContext("hook");
-            function bddflowAfterEachDone() {
+            function weirAfterEachDone() {
                 self.extendSharedContext(context, "hook");
                 taskDone();
             }
             if (hook.length) {
-                this.hooks.afterEach.call(context, bddflowAfterEachDone);
+                this.hooks.afterEach.call(context, weirAfterEachDone);
             } else {
                 this.hooks.afterEach.call(context);
-                bddflowAfterEachDone();
+                weirAfterEachDone();
             }
         };
         Describe.prototype.itTask = function(step, path, taskDone) {
             var self = this;
             var context = this.getSharedContext("it");
             var emit = this.get("emit");
-            var itWrap = this.get("itWrap") || bddflowDefItWrap;
-            function bddflowItDone() {
+            var itWrap = this.get("itWrap") || weirDefItWrap;
+            function weirItDone() {
                 self.extendSharedContext(context, "it");
                 emit("itPop", step.name);
                 taskDone();
             }
             if (itWrap.length == 3) {
-                itWrap(step.name, function bddflowItWrapAsync() {
+                itWrap(step.name, function weirItWrapAsync() {
                     var wrapContext = this || {};
                     extend(context, wrapContext);
-                    bddflowAddInternalProp(context, "name", step.name, true);
-                    bddflowAddInternalProp(context, "path", path, true);
+                    weirAddInternalProp(context, "name", step.name, true);
+                    weirAddInternalProp(context, "path", path, true);
                     emit("itPush", step.name);
                     step.cb.call(context);
-                }, bddflowItDone);
+                }, weirItDone);
             } else {
-                itWrap(step.name, function bddflowItWrap() {
+                itWrap(step.name, function weirItWrap() {
                     var wrapContext = this || {};
                     extend(context, wrapContext);
-                    bddflowAddInternalProp(context, "name", step.name, true);
-                    bddflowAddInternalProp(context, "path", path, true);
+                    weirAddInternalProp(context, "name", step.name, true);
+                    weirAddInternalProp(context, "path", path, true);
                     emit("itPush", step.name);
                     if (step.cb.length) {
-                        step.cb.call(context, bddflowItDone);
+                        step.cb.call(context, weirItDone);
                     } else {
                         step.cb.call(context);
-                        bddflowItDone();
+                        weirItDone();
                     }
                 });
             }
@@ -670,28 +670,28 @@
             this.name = name;
             this.cb = cb;
         }
-        function bddflowRunStepsInBatch(steps, cb) {
+        function weirRunStepsInBatch(steps, cb) {
             var batch = new Batch();
             batch.concurrency(1);
-            steps.forEach(function bddflowForEachStep(step) {
+            steps.forEach(function weirForEachStep(step) {
                 batch.push(step.cb);
             });
             batch.end(cb);
         }
-        function bddflowNoOp() {}
-        function bddflowBatchNoOp(taskDone) {
+        function weirNoOp() {}
+        function weirBatchNoOp(taskDone) {
             taskDone();
         }
-        function bddflowDefItWrap(name, cb) {
+        function weirDefItWrap(name, cb) {
             cb();
         }
-        function bddflowDefDescribeWrap(name, cb) {
+        function weirDefDescribeWrap(name, cb) {
             cb();
         }
-        function bddflowDelInternalProp(obj, key) {
+        function weirDelInternalProp(obj, key) {
             delete obj["__conjure__" + key];
         }
-        function bddflowAddInternalProp(obj, key, val, writable) {
+        function weirAddInternalProp(obj, key, val, writable) {
             Object.defineProperty(obj, "__conjure__" + key, {
                 value: val,
                 enumerable: false,
@@ -700,24 +700,24 @@
             });
         }
     });
-    require.alias("visionmedia-configurable.js/index.js", "bdd-flow/deps/configurable.js/index.js");
-    require.alias("codeactual-extend/index.js", "bdd-flow/deps/extend/index.js");
-    require.alias("visionmedia-batch/index.js", "bdd-flow/deps/batch/index.js");
+    require.alias("visionmedia-configurable.js/index.js", "weir/deps/configurable.js/index.js");
+    require.alias("codeactual-extend/index.js", "weir/deps/extend/index.js");
+    require.alias("visionmedia-batch/index.js", "weir/deps/batch/index.js");
     require.alias("component-emitter/index.js", "visionmedia-batch/deps/emitter/index.js");
     require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
-    require.alias("component-clone/index.js", "bdd-flow/deps/clone/index.js");
+    require.alias("component-clone/index.js", "weir/deps/clone/index.js");
     require.alias("component-type/index.js", "component-clone/deps/type/index.js");
-    require.alias("component-emitter/index.js", "bdd-flow/deps/emitter/index.js");
+    require.alias("component-emitter/index.js", "weir/deps/emitter/index.js");
     require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
-    require.alias("component-bind/index.js", "bdd-flow/deps/bind/index.js");
-    require.alias("bdd-flow/lib/bdd-flow/index.js", "bdd-flow/index.js");
+    require.alias("component-bind/index.js", "weir/deps/bind/index.js");
+    require.alias("weir/lib/weir/index.js", "weir/index.js");
     if (typeof exports == "object") {
-        module.exports = require("bdd-flow");
+        module.exports = require("weir");
     } else if (typeof define == "function" && define.amd) {
         define(function() {
-            return require("bdd-flow");
+            return require("weir");
         });
     } else {
-        window["bddflow"] = require("bdd-flow");
+        window["weir"] = require("weir");
     }
 })();

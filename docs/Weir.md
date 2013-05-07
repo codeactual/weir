@@ -1,16 +1,16 @@
 Build and run BDD flows with before/after hooks, describe, it
 
-_Source: [lib/bdd-flow/index.js](../lib/bdd-flow/index.js)_
+_Source: [lib/weir/index.js](../lib/weir/index.js)_
 
-- [exports.Bddflow](#exportsbddflow)
+- [exports.Weir](#exportsweir)
 - [exports.create](#exportscreate)
 - [exports.extend](#exportsextendext)
-- [Bddflow](#bddflow)
-- [Bddflow.prototype.addContextProp](#bddflowprototypeaddcontextpropkey-val)
-- [Bddflow.prototype.addRootDescribe](#bddflowprototypeaddrootdescribename-cb)
-- [Bddflow.prototype.currentDepth](#bddflowprototypecurrentdepth)
-- [Bddflow.prototype.hideContextProp](#bddflowprototypehidecontextproptype-regex)
-- [Bddflow.prototype.run](#bddflowprototyperun)
+- [Weir](#weir)
+- [Weir.prototype.addContextProp](#weirprototypeaddcontextpropkey-val)
+- [Weir.prototype.addRootDescribe](#weirprototypeaddrootdescribename-cb)
+- [Weir.prototype.currentDepth](#weirprototypecurrentdepth)
+- [Weir.prototype.hideContextProp](#weirprototypehidecontextproptype-regex)
+- [Weir.prototype.run](#weirprototyperun)
 - [Describe.prototype.it](#describeprototypeitname-cb)
 - [Describe.prototype.describe](#describeprototypedescribename-cb)
 - [Describe.prototype.before](#describeprototypebeforecb)
@@ -18,13 +18,13 @@ _Source: [lib/bdd-flow/index.js](../lib/bdd-flow/index.js)_
 - [Describe.prototype.after](#describeprototypeaftercb)
 - [Describe.prototype.afterEach](#describeprototypeaftereachcb)
 
-# exports.Bddflow()
+# exports.Weir()
 
-> [Bddflow](#bddflow) constructor.
+> [Weir](#weir) constructor.
 
 # exports.create()
 
-> Create a new [Bddflow](#bddflow).
+> Create a new [Weir](#weir).
 
 **Return:**
 
@@ -32,7 +32,7 @@ _Source: [lib/bdd-flow/index.js](../lib/bdd-flow/index.js)_
 
 # exports.extend(ext)
 
-> Extend [Bddflow](#bddflow).prototype.
+> Extend [Weir](#weir).prototype.
 
 **Parameters:**
 
@@ -42,14 +42,14 @@ _Source: [lib/bdd-flow/index.js](../lib/bdd-flow/index.js)_
 
 `{object}` Merge result.
 
-# Bddflow()
+# Weir()
 
-> Bddflow constructor.
+> Weir constructor.
 
 **Usage:**
 
 ```js
-var flow = require('bdd-flow').create();
+var flow = require('weir').create();
 flow.addRootDescribe('subject', function() {
   this.it('should do X', function() {
     // ...
@@ -106,7 +106,7 @@ flow.addRootDescribe('subject', function() {
 
 - [emitter](https://github.com/component/emitter)
 
-# Bddflow.prototype.addContextProp(key, val)
+# Weir.prototype.addContextProp(key, val)
 
 > Add a property to the initial hook/describe/it shared context.
 
@@ -119,7 +119,7 @@ flow.addRootDescribe('subject', function() {
 
 `{object}` this
 
-# Bddflow.prototype.addRootDescribe(name, cb)
+# Weir.prototype.addRootDescribe(name, cb)
 
 > Add a top-level `describe()`.
 
@@ -132,7 +132,7 @@ flow.addRootDescribe('subject', function() {
 
 `{object}` this
 
-# Bddflow.prototype.currentDepth()
+# Weir.prototype.currentDepth()
 
 > Get the current stack depth.
 
@@ -144,7 +144,7 @@ flow.addRootDescribe('subject', function() {
 - Each deeper `describe()` is 1 more than its parent `describe()`.
 - Each `it()` is 1 more than its parent `describe()`.
 
-# Bddflow.prototype.hideContextProp(type, regex)
+# Weir.prototype.hideContextProp(type, regex)
 
 > Prevent a type of flow function from 'inheriting' specific context properties
 from enclosing/subsequently-executed flow functions.
@@ -158,7 +158,7 @@ from enclosing/subsequently-executed flow functions.
 
 `{object}` this
 
-# Bddflow.prototype.run()
+# Weir.prototype.run()
 
 > Run collected `describe()` steps.
 

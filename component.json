@@ -1,6 +1,6 @@
 {
-  "name": "bdd-flow",
-  "repo": "codeactual/bdd-flow",
+  "name": "weir",
+  "repo": "codeactual/weir",
   "description": "Build and run BDD flows with before/after hooks, describe, it",
   "version": "0.1.0",
   "keywords": [],
@@ -13,9 +13,9 @@
     "component/bind": "9a55368"
   },
   "development": {},
-  "main": "lib/bdd-flow/index.js",
+  "main": "lib/weir/index.js",
   "scripts": [
-    "lib/bdd-flow/index.js"
+    "lib/weir/index.js"
   ],
   "license": "MIT"
 }

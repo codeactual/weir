@@ -6,13 +6,13 @@ var should = chai.should();
 chai.Assertion.includeStack = true;
 chai.use(require('sinon-chai'));
 
-var bddflow = require('../../..');
-var Bddflow = bddflow.Bddflow;
+var weir = require('../../..');
+var Weir = weir.Weir;
 
-var requireComponent = bddflow.requireComponent;
+var requireComponent = weir.requireComponent;
 var Batch = requireComponent('batch');
 
-describe('Bddflow', function() {
+describe('Weir', function() {
   beforeEach(function() {
     this.expectedOrder = [
       'b',
@@ -54,7 +54,7 @@ describe('Bddflow', function() {
       });
     };
 
-    this.flow = bddflow.create();
+    this.flow = weir.create();
   });
 
   it('should follow correct execution order', function(testDone) {
@@ -206,7 +206,7 @@ describe('Bddflow', function() {
       .run();
   });
 
-  it('should omit bdd-flow class props', function(testDone) {
+  it('should omit weir class props', function(testDone) {
     var self = this;
     var results = [];
 
@@ -536,7 +536,7 @@ describe('Bddflow', function() {
 
     batch.push(function(taskDone) {
       results = [];
-      var flow = bddflow.create();
+      var flow = weir.create();
       flow
         .set('grep', /i1/)
         .set('done', function done() {
@@ -548,7 +548,7 @@ describe('Bddflow', function() {
     });
     batch.push(function(taskDone) {
       results = [];
-      var flow = bddflow.create();
+      var flow = weir.create();
       flow
         .set('grep', /i2/)
         .set('done', function done() {
@@ -560,7 +560,7 @@ describe('Bddflow', function() {
     });
     batch.push(function(taskDone) {
       results = [];
-      var flow = bddflow.create();
+      var flow = weir.create();
       flow
         .set('grep', /d2/)
         .set('done', function done() {
@@ -572,7 +572,7 @@ describe('Bddflow', function() {
     });
     batch.push(function(taskDone) {
       results = [];
-      var flow = bddflow.create();
+      var flow = weir.create();
       flow
         .set('grep', /d/)
         .set('done', function done() {
@@ -584,7 +584,7 @@ describe('Bddflow', function() {
     });
     batch.push(function(taskDone) {
       results = [];
-      var flow = bddflow.create();
+      var flow = weir.create();
       flow
         .set('grep', /r/)
         .set('done', function done() {
@@ -617,7 +617,7 @@ describe('Bddflow', function() {
 
     batch.push(function(taskDone) {
       results = [];
-      var flow = bddflow.create();
+      var flow = weir.create();
       flow
         .set('grepv', /i1/)
         .set('done', function done() {
@@ -629,7 +629,7 @@ describe('Bddflow', function() {
     });
     batch.push(function(taskDone) {
       results = [];
-      var flow = bddflow.create();
+      var flow = weir.create();
       flow
         .set('grepv', /i2/)
         .set('done', function done() {
@@ -641,7 +641,7 @@ describe('Bddflow', function() {
     });
     batch.push(function(taskDone) {
       results = [];
-      var flow = bddflow.create();
+      var flow = weir.create();
       flow
         .set('grepv', /d2/)
         .set('done', function done() {
@@ -653,7 +653,7 @@ describe('Bddflow', function() {
     });
     batch.push(function(taskDone) {
       results = [];
-      var flow = bddflow.create();
+      var flow = weir.create();
       flow
         .set('grepv', /d/)
         .set('done', function done() {
@@ -665,7 +665,7 @@ describe('Bddflow', function() {
     });
     batch.push(function(taskDone) {
       results = [];
-      var flow = bddflow.create();
+      var flow = weir.create();
       flow
         .set('grepv', /r/)
         .set('done', function done() {

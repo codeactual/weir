@@ -1,4 +1,4 @@
-# bdd-flow
+# weir
 
 Library for building and running BDD flows.
 
@@ -11,13 +11,13 @@ Library for building and running BDD flows.
 
 API modeled after [Mocha](http://visionmedia.github.io/mocha/).
 
-[![Build Status](https://travis-ci.org/codeactual/bdd-flow.png)](https://travis-ci.org/codeactual/bdd-flow)
+[![Build Status](https://travis-ci.org/codeactual/weir.png)](https://travis-ci.org/codeactual/weir)
 
 ## Example
 
 ### Integration
 
-* [conjure](https://github.com/codeactual/conjure): Relies on `bdd-flow` for test composition. Injects the standard [CasperJS](http://casperjs.org/) testing API, and custom wrappers, into each `it()`.
+* [conjure](https://github.com/codeactual/conjure): Relies on `weir` for test composition. Injects the standard [CasperJS](http://casperjs.org/) testing API, and custom wrappers, into each `it()`.
 
 ```js
 module.exports = function(conjure) {
@@ -37,7 +37,7 @@ module.exports = function(conjure) {
 ### API: Basic run
 
 ```js
-flow = bddflow.create();
+flow = weir.create();
 flow
   .addRootDescribe('subject', function() {
     this.it('should do X', function() {
@@ -50,7 +50,7 @@ flow
 ### API: Async it() and hook
 
 ```js
-flow = bddflow.create();
+flow = weir.create();
 flow
   .addRootDescribe('subject', function() {
     this.beforeEach(function(done) {
@@ -68,7 +68,7 @@ flow
 ### API: Nested describe() with it() filtering and custom context properties
 
 ```js
-flow = bddflow.create();
+flow = weir.create();
 flow
   .set('grep', /should run/)
   .addContextProp('foo', 'bar')
@@ -98,15 +98,15 @@ flow
 
 ### [Component](https://github.com/component/component)
 
-    $ component install codeactual/bdd-flow
+    $ component install codeactual/weir
 
-### [NPM](https://npmjs.org/package/bdd-flow)
+### [NPM](https://npmjs.org/package/weir)
 
-    npm install bdd-flow
+    npm install weir
 
 ## API Documentation
 
-[Bddflow/Describe](docs/Bddflow.md)
+[Weir/Describe](docs/Weir.md)
 
 ## License
 

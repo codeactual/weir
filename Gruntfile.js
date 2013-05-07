@@ -41,7 +41,7 @@ module.exports = function(grunt) {
           beautify: true
         },
         files: {
-          'dist/bdd-flow.js': 'dist/bdd-flow.js'
+          'dist/weir.js': 'dist/weir.js'
         }
       }
     },
@@ -52,10 +52,10 @@ module.exports = function(grunt) {
         stderr: true
       },
       build: {
-        command: 'component install --dev && component build --standalone bddflow --name bdd-flow --out dist --dev'
+        command: 'component install --dev && component build --standalone weir --name weir --out dist --dev'
       },
       dist: {
-        command: 'component build --standalone bddflow --name bdd-flow --out dist'
+        command: 'component build --standalone weir --name weir --out dist'
       },
       shrinkwrap: {
         command: 'npm shrinkwrap'
@@ -65,7 +65,7 @@ module.exports = function(grunt) {
         command: 'mocha --colors --async-only --reporter spec --recursive test/lib'
       },
       dox_lib: {
-        command: 'gitemplate-dox --input lib/bdd-flow/index.js --output docs/Bddflow.md'
+        command: 'gitemplate-dox --input lib/weir/index.js --output docs/Weir.md'
       }
     }
   });

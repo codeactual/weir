@@ -1,5 +1,5 @@
 {
-  "name": "bdd-flow",
+  "name": "weir",
   "description": "Build and run BDD flows with before/after hooks, describe, it",
   "version": "0.1.0",
   "main": "index.js",
@@ -12,12 +12,12 @@
     }
   ],
   "bugs": {
-    "url": "https://github.com/codeactual/bdd-flow/issues"
+    "url": "https://github.com/codeactual/weir/issues"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/codeactual/bdd-flow.git"
+    "url": "https://github.com/codeactual/weir.git"
   },
   "devDependencies": {
     "chai": "~1.5.0",
