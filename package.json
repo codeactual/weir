@@ -3,8 +3,7 @@
   "description": "Build and run BDD flows with before/after hooks, describe, it",
   "version": "0.1.0",
   "main": "index.js",
-  "keywords": [
-  ],
+  "keywords": [],
   "contributors": [
     {
       "name": "David Smith",
@@ -28,7 +27,7 @@
     "grunt-contrib-uglify": "~0.2.0",
     "grunt-shell": "~0.2.1",
     "mocha": "~1.9.0",
-    "sinon": "~1.6.0",
+    "sinon": "~1.7.1",
     "sinon-chai": "~2.3.1"
   },
   "scripts": {

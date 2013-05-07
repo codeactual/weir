@@ -56,16 +56,17 @@
       }
     },
     "sinon": {
-      "version": "1.6.0",
-      "from": "sinon@1.6.0",
+      "version": "1.7.1",
+      "from": "sinon@latest",
+      "resolved": "https://registry.npmjs.org/sinon/-/sinon-1.7.1.tgz",
       "dependencies": {
         "buster-format": {
           "version": "0.5.5",
-          "from": "buster-format@0.5.5",
+          "from": "buster-format@~0.5",
           "dependencies": {
             "buster-core": {
               "version": "0.6.4",
-              "from": "buster-core@0.6.4"
+              "from": "buster-core@>=0.6.2"
             }
           }
         }
