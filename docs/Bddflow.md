@@ -212,7 +212,7 @@ from enclosing/subsequently-executed flow functions.
 
 # Describe.prototype.after(cb)
 
-> Override the default no-op after() hook.
+> Run a custom hook at the end of the current `describe()`.
 
 **Parameters:**
 

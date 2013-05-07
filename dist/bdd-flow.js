@@ -446,6 +446,31 @@
             this.settings = {};
         }
         configurable(Describe.prototype);
+        Describe.copyConfig = function(src, dest) {
+            Bddflow.describeConfigKeys.forEach(function bddflowDescribeCopyConfigIter(key) {
+                dest.set(key, src.get(key));
+            });
+        };
+        Describe.prototype.createStep = function(name, cb) {
+            var self = this;
+            return function(taskDone) {
+                var desc = new Describe(name);
+                Describe.copyConfig(self, desc);
+                desc.runStep(name, cb);
+                var batch = new Batch();
+                batch.concurrency(1);
+                batch.push(desc.createBeforeTask());
+                batch.push(function bddflowRunNestedDescribeSteps(done) {
+                    desc.steps = desc.steps.map(bind(desc, desc.prepareSteps));
+                    bddflowRunStepsInBatch(desc.steps, done);
+                });
+                batch.push(desc.createAfterTask());
+                batch.end(function bddflowEndDescribeBatch() {
+                    desc.popStep();
+                    taskDone();
+                });
+            };
+        };
         Describe.prototype.extendSharedContext = function(ext, type) {
             return extend(this.get("sharedContext"), this.filterProps(ext, type));
         };
@@ -467,168 +492,175 @@
         Describe.prototype.getSharedContext = function(type) {
             return this.filterProps(this.get("sharedContext"), type);
         };
+        Describe.prototype.prepareSteps = function(step) {
+            var self = this;
+            var path = this.get("path");
+            if (step instanceof DescribeCallback) {
+                var context = this.getSharedContext("describe");
+                return new DescribeCallback(step.name, bind(context, step.cb));
+            }
+            var itPath = path.concat(step.name);
+            var grep = this.get("grep");
+            var grepv = this.get("grepv");
+            if (grepv) {
+                if (grepv.test(itPath.join(" "))) {
+                    return new ItCallback(step.name, bddflowBatchNoOp);
+                }
+            } else if (grep) {
+                if (!grep.test(itPath.join(" "))) {
+                    return new ItCallback(step.name, bddflowBatchNoOp);
+                }
+            }
+            return new ItCallback(step.name, function bddflowItCallback(done) {
+                var batch = new Batch();
+                batch.push(self.createBeforeEachTask());
+                batch.push(self.createItTask(step, itPath));
+                batch.push(self.createAfterEachTask());
+                batch.concurrency(1);
+                batch.end(done);
+            });
+        };
+        Describe.prototype.runStep = function(name, cb) {
+            var self = this;
+            var path = this.get("path");
+            path.push(name);
+            var describeWrap = this.get("describeWrap") || bddflowDefDescribeWrap;
+            describeWrap(name, function bddflowDescribeWrap() {
+                var wrapContext = this || {};
+                var mergedContext = self.extendSharedContext(wrapContext, "describe");
+                mergedContext.describe = bind(self, self.describe);
+                mergedContext.it = bind(self, self.it);
+                mergedContext.before = bind(self, self.before);
+                mergedContext.beforeEach = bind(self, self.beforeEach);
+                mergedContext.after = bind(self, self.after);
+                mergedContext.afterEach = bind(self, self.afterEach);
+                bddflowAddInternalProp(mergedContext, "name", name);
+                cb.call(mergedContext);
+                self.pushStep();
+            });
+        };
         Describe.prototype.it = function(name, cb) {
             this.steps.push(new ItCallback(name, cb));
         };
         Describe.prototype.describe = function(name, cb) {
-            var self = this;
-            var step = function(done) {
-                var desc = new Describe(name);
-                Bddflow.describeConfigKeys.forEach(function bddflowForEachConfigKey(key) {
-                    desc.set(key, self.get(key));
-                });
-                var path = desc.get("path");
-                path.push(name);
-                var describeWrap = desc.get("describeWrap") || bddflowDefDescribeWrap;
-                describeWrap(name, function bddflowDescribeWrap() {
-                    var wrapContext = this || {};
-                    var mergedContext = desc.extendSharedContext(wrapContext, "describe");
-                    mergedContext.describe = bind(desc, desc.describe);
-                    mergedContext.it = bind(desc, desc.it);
-                    mergedContext.before = bind(desc, desc.before);
-                    mergedContext.beforeEach = bind(desc, desc.beforeEach);
-                    mergedContext.after = bind(desc, desc.after);
-                    mergedContext.afterEach = bind(desc, desc.afterEach);
-                    bddflowAddInternalProp(mergedContext, "name", name);
-                    cb.call(mergedContext);
-                });
-                desc.pushStep();
-                var batch = new Batch();
-                batch.push(function bddflowBatchPushBeforeHook(done) {
-                    function asyncCb() {
-                        desc.extendSharedContext(context, "hook");
-                        done();
-                    }
-                    var hook = desc.hooks.before;
-                    var context = desc.getSharedContext("hook");
-                    if (hook.length) {
-                        desc.hooks.before.call(context, asyncCb);
-                    } else {
-                        desc.hooks.before.call(context);
-                        asyncCb();
-                    }
-                });
-                batch.push(function bddflowBatchPushItOrDescribe(done) {
-                    desc.steps = desc.steps.map(function bddflowMapDescribeSteps(step) {
-                        if (step instanceof DescribeCallback) {
-                            var context = desc.getSharedContext("describe");
-                            return new DescribeCallback(step.name, bind(context, step.cb));
-                        }
-                        var itPath = path.concat(step.name);
-                        var grep = desc.get("grep");
-                        var grepv = desc.get("grepv");
-                        if (grepv) {
-                            if (grepv.test(itPath.join(" "))) {
-                                return new ItCallback(step.name, bddflowBatchNoOp);
-                            }
-                        } else if (grep) {
-                            if (!grep.test(itPath.join(" "))) {
-                                return new ItCallback(step.name, bddflowBatchNoOp);
-                            }
-                        }
-                        return new ItCallback(step.name, function bddflowItCallback(done) {
-                            var batch = new Batch();
-                            batch.push(function bddflowBatchPushBeforeEach(done) {
-                                function asyncCb() {
-                                    desc.extendSharedContext(context, "hook");
-                                    done();
-                                }
-                                var hook = desc.hooks.beforeEach;
-                                var context = desc.getSharedContext("hook");
-                                if (hook.length) {
-                                    desc.hooks.beforeEach.call(context, asyncCb);
-                                } else {
-                                    desc.hooks.beforeEach.call(context);
-                                    asyncCb();
-                                }
-                            });
-                            batch.push(function bddflowBatchPushIt(done) {
-                                var context = desc.getSharedContext("it");
-                                var emit = desc.get("emit");
-                                function asyncCb() {
-                                    desc.extendSharedContext(context, "it");
-                                    emit("itPop", step.name);
-                                    done();
-                                }
-                                var itWrap = desc.get("itWrap") || bddflowDefItWrap;
-                                if (itWrap.length == 3) {
-                                    itWrap(step.name, function bddflowItWrapAsync() {
-                                        var wrapContext = this || {};
-                                        extend(context, wrapContext);
-                                        bddflowAddInternalProp(context, "name", step.name, true);
-                                        bddflowAddInternalProp(context, "path", itPath, true);
-                                        emit("itPush", step.name);
-                                        step.cb.call(context);
-                                    }, asyncCb);
-                                } else {
-                                    itWrap(step.name, function bddflowItWrap() {
-                                        var wrapContext = this || {};
-                                        extend(context, wrapContext);
-                                        bddflowAddInternalProp(context, "name", step.name, true);
-                                        bddflowAddInternalProp(context, "path", itPath, true);
-                                        emit("itPush", step.name);
-                                        if (step.cb.length) {
-                                            step.cb.call(context, asyncCb);
-                                        } else {
-                                            step.cb.call(context);
-                                            asyncCb();
-                                        }
-                                    });
-                                }
-                            });
-                            batch.push(function bddflowBatchPushAfterEach(done) {
-                                function asyncCb() {
-                                    desc.extendSharedContext(context, "hook");
-                                    done();
-                                }
-                                var hook = desc.hooks.afterEach;
-                                var context = desc.getSharedContext("hook");
-                                if (hook.length) {
-                                    desc.hooks.afterEach.call(context, asyncCb);
-                                } else {
-                                    desc.hooks.afterEach.call(context);
-                                    asyncCb();
-                                }
-                            });
-                            batch.concurrency(1);
-                            batch.end(done);
-                        });
-                    });
-                    bddflowRunStepsInBatch(desc.steps, done);
-                });
-                batch.push(function bddflowBatchPushAfter(done) {
-                    function asyncCb() {
-                        desc.extendSharedContext(context, "hook");
-                        done();
-                    }
-                    var hook = desc.hooks.after;
-                    var context = desc.getSharedContext("hook");
-                    if (hook.length) {
-                        desc.hooks.after.call(context, asyncCb);
-                    } else {
-                        desc.hooks.after.call(context);
-                        asyncCb();
-                    }
-                });
-                batch.concurrency(1);
-                batch.end(function bddflowEndDescribeBatch() {
-                    desc.popStep();
-                    done();
-                });
-            };
-            this.steps.push(new DescribeCallback(name, step));
+            this.steps.push(new DescribeCallback(name, this.createStep(name, cb)));
         };
         Describe.prototype.before = function(cb) {
             this.hooks.before = cb;
         };
+        Describe.prototype.createBeforeTask = function() {
+            var self = this;
+            return function bddflowBeforePushTask(taskDone) {
+                function bddflowBeforeDone() {
+                    self.extendSharedContext(context, "hook");
+                    taskDone();
+                }
+                var hook = self.hooks.before;
+                var context = self.getSharedContext("hook");
+                if (hook.length) {
+                    self.hooks.before.call(context, bddflowBeforeDone);
+                } else {
+                    self.hooks.before.call(context);
+                    bddflowBeforeDone();
+                }
+            };
+        };
         Describe.prototype.beforeEach = function(cb) {
             this.hooks.beforeEach = cb;
+        };
+        Describe.prototype.createBeforeEachTask = function() {
+            var self = this;
+            return function bddflowBeforeEachPushTask(taskDone) {
+                function bddflowBeforeEachDone() {
+                    self.extendSharedContext(context, "hook");
+                    taskDone();
+                }
+                var hook = self.hooks.beforeEach;
+                var context = self.getSharedContext("hook");
+                if (hook.length) {
+                    self.hooks.beforeEach.call(context, bddflowBeforeEachDone);
+                } else {
+                    self.hooks.beforeEach.call(context);
+                    bddflowBeforeEachDone();
+                }
+            };
         };
         Describe.prototype.after = function(cb) {
             this.hooks.after = cb;
         };
+        Describe.prototype.createAfterTask = function() {
+            var self = this;
+            return function bddflowAfterPushTask(taskDone) {
+                function bddflowAfterDone() {
+                    self.extendSharedContext(context, "hook");
+                    taskDone();
+                }
+                var hook = self.hooks.after;
+                var context = self.getSharedContext("hook");
+                if (hook.length) {
+                    self.hooks.after.call(context, bddflowAfterDone);
+                } else {
+                    self.hooks.after.call(context);
+                    bddflowAfterDone();
+                }
+            };
+        };
         Describe.prototype.afterEach = function(cb) {
             this.hooks.afterEach = cb;
+        };
+        Describe.prototype.createAfterEachTask = function() {
+            var self = this;
+            return function bddflowAfterEachPushTask(taskDone) {
+                function bddflowAfterEachDone() {
+                    self.extendSharedContext(context, "hook");
+                    taskDone();
+                }
+                var hook = self.hooks.afterEach;
+                var context = self.getSharedContext("hook");
+                if (hook.length) {
+                    self.hooks.afterEach.call(context, bddflowAfterEachDone);
+                } else {
+                    self.hooks.afterEach.call(context);
+                    bddflowAfterEachDone();
+                }
+            };
+        };
+        Describe.prototype.createItTask = function(step, path) {
+            var self = this;
+            return function bddflowItPushTask(taskDone) {
+                var context = self.getSharedContext("it");
+                var emit = self.get("emit");
+                var itWrap = self.get("itWrap") || bddflowDefItWrap;
+                function bddflowItDone() {
+                    self.extendSharedContext(context, "it");
+                    emit("itPop", step.name);
+                    taskDone();
+                }
+                if (itWrap.length == 3) {
+                    itWrap(step.name, function bddflowItWrapAsync() {
+                        var wrapContext = this || {};
+                        extend(context, wrapContext);
+                        bddflowAddInternalProp(context, "name", step.name, true);
+                        bddflowAddInternalProp(context, "path", path, true);
+                        emit("itPush", step.name);
+                        step.cb.call(context);
+                    }, bddflowItDone);
+                } else {
+                    itWrap(step.name, function bddflowItWrap() {
+                        var wrapContext = this || {};
+                        extend(context, wrapContext);
+                        bddflowAddInternalProp(context, "name", step.name, true);
+                        bddflowAddInternalProp(context, "path", path, true);
+                        emit("itPush", step.name);
+                        if (step.cb.length) {
+                            step.cb.call(context, bddflowItDone);
+                        } else {
+                            step.cb.call(context);
+                            bddflowItDone();
+                        }
+                    });
+                }
+            };
         };
         Describe.prototype.pushStep = function() {
             var emit = this.get("emit");
