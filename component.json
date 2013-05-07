@@ -3,7 +3,13 @@
   "repo": "codeactual/weir",
   "description": "Build and run BDD flows with before/after hooks, describe, it",
   "version": "0.1.0",
-  "keywords": [],
+  "keywords": [
+    "bdd",
+    "test",
+    "nested",
+    "testing",
+    "unit test"
+  ],
   "dependencies": {
     "visionmedia/configurable.js": "f87ca5f",
     "codeactual/extend": "0.1.0",

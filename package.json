@@ -3,7 +3,13 @@
   "description": "Build and run BDD flows with before/after hooks, describe, it",
   "version": "0.1.0",
   "main": "index.js",
-  "keywords": [],
+  "keywords": [
+    "bdd",
+    "test",
+    "nested",
+    "testing",
+    "unit test"
+  ],
   "contributors": [
     {
       "name": "David Smith",
