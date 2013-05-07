@@ -1,7 +1,7 @@
 {
   "name": "weir",
   "description": "Build and run BDD flows with before/after hooks, describe, it",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "index.js",
   "keywords": [
     "bdd",
