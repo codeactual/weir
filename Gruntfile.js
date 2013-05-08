@@ -62,7 +62,7 @@ module.exports = function(grunt) {
         command: 'mocha --colors --async-only --reporter spec --recursive test/lib'
       },
       dox_lib: {
-        command: 'gitemplate-dox --input lib/weir/index.js --output docs/Weir.md'
+        command: 'apidox --input lib/weir/index.js --output docs/Weir.md'
       }
     }
   });
