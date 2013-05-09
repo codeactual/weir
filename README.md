@@ -1,40 +1,45 @@
 # weir
 
-Library for building and running BDD flows.
+Library for creating BDD-style test flows for JavaScript.
 
 * Nested `describe()`
-* Sync or async `it()`
-* Sync or async `before/beforeEach/after/afterEach`
-* Select/omit `it()` execution by regular expression
+* Optionally async `it()` and `before/beforeEach/after/afterEach` hooks
+* Filter `it()` execution by regular expression
 * Manage `it()` and hook contexts with property injection/omission
-* Supply your own assertion library
+* Supply your own runner CLI, assertion library, etc.
 
 API modeled after [Mocha](http://visionmedia.github.io/mocha/).
 
 [![Build Status](https://travis-ci.org/codeactual/weir.png)](https://travis-ci.org/codeactual/weir)
 
-## Example
+## Goal 
 
-### Integration
+Ability to add BDD-style flow to new environments like [CasperJS](https://github.com/n1k0/casperjs/)/[PhantomJS](https://github.com/ariya/phantomjs), but integrate with preexisting assertion APIs, etc.
 
-* [conjure](https://github.com/codeactual/conjure): Relies on `weir` for test composition. Injects the standard [CasperJS](http://casperjs.org/) testing API, and custom wrappers, into each `it()`.
+## Use case: [conjure](https://github.com/codeactual/conjure), a [CasperJS](https://github.com/n1k0/casperjs/) runner and library
+
+`conjure` allows you to write modular tests in a BDD-style flow.
 
 ```js
 module.exports = function(conjure) {
   conjure.set('initUrl', '/login').set('initSel', '.login');
-
+  
   conjure.test('login page', function() {
     this.describe('form', function() {
       this.it('should not auto-check "Remember Me"' , function() {
-        this.selectorExists('.remember-me');
-        this.selectorMissing('.remember-me:checked');
+        this.conjure.selectorExists('.remember-me');
+        this.conjure.selectorMissing('.remember-me:checked');
       });
     });
   });
 };
 ```
 
-### API: Basic run
+Standard `CasperJS` APIs like `casper` and `utils` are injected into test method contexts using [addContextProp()](docs/Weir.md).
+
+## Examples
+
+### Basic run
 
 ```js
 flow = weir.create();
@@ -47,7 +52,7 @@ flow
   .run();
 ```
 
-### API: Async it() and hook
+### Async `it()` and `beforeEach()`
 
 ```js
 flow = weir.create();
@@ -65,7 +70,7 @@ flow
   .run();
 ```
 
-### API: Nested describe() with it() filtering and custom context properties
+### Nested `describe()` with `it()` filtering and custom context properties
 
 ```js
 flow = weir.create();
@@ -104,9 +109,9 @@ flow
 
     npm install weir
 
-## API Documentation
+## API
 
-[Weir/Describe](docs/Weir.md)
+[Documentation](docs/Weir.md)
 
 ## License
 
