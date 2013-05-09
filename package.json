@@ -1,6 +1,6 @@
 {
   "name": "weir",
-  "description": "Build and run BDD flows with before/after hooks, describe, it",
+  "description": "Library for creating BDD-style test flows for JavaScript",
   "version": "0.1.2",
   "main": "index.js",
   "keywords": [

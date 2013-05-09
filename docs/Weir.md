@@ -1,4 +1,4 @@
-Build and run BDD flows with before/after hooks, describe, it
+Library for creating BDD-style test flows for JavaScript
 
 _Source: [lib/weir/index.js](../lib/weir/index.js)_
 
