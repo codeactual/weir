@@ -91,7 +91,7 @@ flow
 
 **See:**
 
-- [Events, context injection wrappers, etc.](docs/examples.md)
+- [Events, context injection wrappers, etc.](examples.md)
 - [Batch](https://github.com/visionmedia/batch#api)
 - [emitter](https://github.com/component/emitter)
 
