@@ -84,8 +84,8 @@ flow
 
 ## Documentation
 
-[API](docs/Weir.md)
-[Events, context injection wrappers, etc.](docs/examples.md)
+* [API](docs/Weir.md)
+* [Events, context injection wrappers, etc.](docs/examples.md)
 
 ## License
 

@@ -75,7 +75,7 @@ flow.on('itPop', function(name) {
 
 ## `describeWrap`
 
-> Set a `describeWrap` function if you need to customize the context of each function (`cb`) passed to `describe()`.
+> Set a `describeWrap` function if you need to customize the context of each function passed to `describe()`.
 
 ```js
 flow.set('describeWrap', function (name, cb) {
@@ -87,7 +87,7 @@ flow.set('describeWrap', function (name, cb) {
 
 ## `itWrap`
 
-> Set an `itWrap` function if you need to customize the context of each function (`cb`) passed to `it()`.
+> Set an `itWrap` function if you need to customize the context of each function passed to `it()`.
 
 ```js
 flow.set('itWrap', function(name, cb) {
