@@ -12,7 +12,7 @@ API modeled after [Mocha](http://visionmedia.github.io/mocha/).
 
 [![Build Status](https://travis-ci.org/codeactual/weir.png)](https://travis-ci.org/codeactual/weir)
 
-## Goal 
+## Goal
 
 Ability to add BDD-style flow to new environments like [CasperJS](https://github.com/n1k0/casperjs/)/[PhantomJS](https://github.com/ariya/phantomjs), but integrate with preexisting assertion APIs, etc.
 
@@ -23,7 +23,7 @@ Ability to add BDD-style flow to new environments like [CasperJS](https://github
 ```js
 module.exports = function(conjure) {
   conjure.set('initUrl', '/login').set('initSel', '.login');
-  
+
   conjure.test('login page', function() {
     this.describe('form', function() {
       this.it('should not auto-check "Remember Me"' , function() {
@@ -70,34 +70,7 @@ flow
   .run();
 ```
 
-### Nested `describe()` with `it()` filtering and custom context properties
-
-```js
-flow = weir.create();
-flow
-  .set('grep', /should run/)
-  .addContextProp('foo', 'bar')
-  .addContextProp('hello', 'world')
-  .hideContextProp('it', 'hello')
-  .addRootDescribe('subject', function() {
-    this.describe(function() {
-      this.describe(function() {
-        this.beforeEach(function() {
-          // this.foo = 'bar'
-          // this.hello = 'world';
-        });
-        this.it('should run', function() {
-          // this.foo = 'bar'
-          // this.hello = undefined
-        });
-        this.it('should not run', function() {
-          // ...
-        });
-      });
-    });
-  })
-  .run();
-```
+[More](docs/examples.md)
 
 ## Installation
 
@@ -109,9 +82,10 @@ flow
 
     npm install weir
 
-## API
+## Documentation
 
-[Documentation](docs/Weir.md)
+[API](docs/Weir.md)
+[Events, context injection wrappers, etc.](docs/examples.md)
 
 ## License
 

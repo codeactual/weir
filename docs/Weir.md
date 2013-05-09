@@ -67,10 +67,7 @@ flow
 
 - `{function} done` Callback fired after run finishes
 - `{function} itWrap` `it()` wrapper from which context can be shared
-  - Receives: `(name, cb)`
-  - Or for auto-detected async, receives: `(name, cb, done)`
 - `{function} describeWrap` `describe()` wrapper from which context can be shared
-  - Receives: `(name, cb)`
 - `{object} omitContextRegex` Property name patterns
   - Ex. used to omit properties from propagating between `it()` handlers
   - Indexed by type: `all`, `describe`, `hook`, `it`, `rootDescribe`
@@ -92,19 +89,9 @@ flow
 
 - `emitter` component
 
-**Emits events:**
-
-- `describePush` About to start running its collected steps
-  - `{string} name`
-- `describePop` Finished its collected steps, including nested `describe()`
-  - `{string} name`
-- `itPush` About to start running its callback
-  - `{string} name`
-- `itPop` Its callback finished
-  - `{string} name`
-
 **See:**
 
+- [Events, context injection wrappers, etc.](docs/examples.md)
 - [Batch](https://github.com/visionmedia/batch#api)
 - [emitter](https://github.com/component/emitter)
 
