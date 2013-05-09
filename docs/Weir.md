@@ -50,34 +50,35 @@ _Source: [lib/weir/index.js](../lib/weir/index.js)_
 
 ```js
 var flow = require('weir').create();
-flow.addRootDescribe('subject', function() {
-  this.it('should do X', function() {
+flow
+  .addRootDescribe('subject', function() {
+    this.it('should do X', function() {
     // ...
-  });
-})
-.addContextProp('someKey', someVal)
-.set('done', function() {
-  console.log('Run finished.');
-})
-.run();
+    });
+  })
+  .addContextProp('someKey', someVal)
+  .set('done', function() {
+    console.log('Run finished.');
+  })
+  .run();
 ```
 
 **Configuration:**
 
 - `{function} done` Callback fired after run finishes
-- `{function} itWrap` `it()` wrapper from which context can be 'inherited'
-  - Receives: (`name`, `cb`)
-  - Or for auto-detected async, receives: (`name`, `cb`, `done`)
-- `{function} describeWrap` `describe()` wrapper from which context can be 'inherited'
-  - Receives: (`name`, `cb`)
+- `{function} itWrap` `it()` wrapper from which context can be shared
+  - Receives: `(name, cb)`
+  - Or for auto-detected async, receives: `(name, cb, done)`
+- `{function} describeWrap` `describe()` wrapper from which context can be shared
+  - Receives: `(name, cb)`
 - `{object} omitContextRegex` Property name patterns
   - Ex. used to omit properties from propagating between `it()` handlers
   - Indexed by type: `all`, `describe`, `hook`, `it`, `rootDescribe`
   - Values are arrays of `RegExp`.
 - `{array} path` Names of ancestor describe levels to the currently executing `it()`
-- `{regexp} grep` Filter `it()` execution by "current path + `it()` name"
-- `{regexp} grepv` Omit `it()` execution by "current path + `it()` name"
-- `{object} sharedContext` hook/describe/it context that is 'inherited'
+- `{regexp} grep` Filter `it()` execution by `current path + it() name`
+- `{regexp} grepv` Omit `it()` execution by `current path + it() name`
+- `{object} sharedContext` Shared `this` updated after each hook/describe/it execution
 - `{object} stats`
   - `{number} depth` Current stack depth during test run
 
@@ -201,7 +202,7 @@ from enclosing/subsequently-executed flow functions.
 
 # Describe.prototype.beforeEach(cb)
 
-> Run a custom hook after to the last `it()` in the current `describe()`.
+> Run a custom hook before each `it()` in the current `describe()`.
 
 **Parameters:**
 
