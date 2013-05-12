@@ -2,25 +2,31 @@ Library for creating BDD-style test flows for JavaScript
 
 _Source: [lib/weir/index.js](../lib/weir/index.js)_
 
-- [exports.Weir](#exportsweir)
+<a name="tableofcontents"></a>
+
+- <a name="toc_exports"></a>[exports.Weir](#exportsweir)
 - [exports.create](#exportscreate)
 - [exports.extend](#exportsextendext)
-- [Weir](#weir)
-- [Weir.prototype.addContextProp](#weirprototypeaddcontextpropkey-val)
+- <a name="toc_weir"></a>[Weir](#weir)
+- <a name="toc_weirprototype"></a>[Weir.prototype.addContextProp](#weirprototypeaddcontextpropkey-val)
 - [Weir.prototype.addRootDescribe](#weirprototypeaddrootdescribename-cb)
 - [Weir.prototype.currentDepth](#weirprototypecurrentdepth)
 - [Weir.prototype.hideContextProp](#weirprototypehidecontextproptype-regex)
 - [Weir.prototype.run](#weirprototyperun)
-- [Describe.prototype.it](#describeprototypeitname-cb)
+- <a name="toc_describeprototype"></a>[Describe.prototype.it](#describeprototypeitname-cb)
 - [Describe.prototype.describe](#describeprototypedescribename-cb)
 - [Describe.prototype.before](#describeprototypebeforecb)
 - [Describe.prototype.beforeEach](#describeprototypebeforeeachcb)
 - [Describe.prototype.after](#describeprototypeaftercb)
 - [Describe.prototype.afterEach](#describeprototypeaftereachcb)
 
+<a name="exports"></a>
+
 # exports.Weir()
 
 > [Weir](#weir) constructor.
+
+<sub>Go: [TOC](#tableofcontents) | [exports](#toc_exports)</sub>
 
 # exports.create()
 
@@ -29,6 +35,8 @@ _Source: [lib/weir/index.js](../lib/weir/index.js)_
 **Return:**
 
 `{object}`
+
+<sub>Go: [TOC](#tableofcontents) | [exports](#toc_exports)</sub>
 
 # exports.extend(ext)
 
@@ -41,6 +49,8 @@ _Source: [lib/weir/index.js](../lib/weir/index.js)_
 **Return:**
 
 `{object}` Merge result.
+
+<sub>Go: [TOC](#tableofcontents) | [exports](#toc_exports)</sub>
 
 # Weir()
 
@@ -95,6 +105,10 @@ flow
 - [Batch](https://github.com/visionmedia/batch#api)
 - [emitter](https://github.com/component/emitter)
 
+<sub>Go: [TOC](#tableofcontents)</sub>
+
+<a name="weirprototype"></a>
+
 # Weir.prototype.addContextProp(key, val)
 
 > Add a property to the initial hook/describe/it shared context.
@@ -107,6 +121,8 @@ flow
 **Return:**
 
 `{object}` this
+
+<sub>Go: [TOC](#tableofcontents) | [Weir.prototype](#toc_weirprototype)</sub>
 
 # Weir.prototype.addRootDescribe(name, cb)
 
@@ -121,6 +137,8 @@ flow
 
 `{object}` this
 
+<sub>Go: [TOC](#tableofcontents) | [Weir.prototype](#toc_weirprototype)</sub>
+
 # Weir.prototype.currentDepth()
 
 > Get the current stack depth.
@@ -132,6 +150,8 @@ flow
 - `0` = every root `describe()`
 - Each deeper `describe()` is 1 more than its parent `describe()`.
 - Each `it()` is 1 more than its parent `describe()`.
+
+<sub>Go: [TOC](#tableofcontents) | [Weir.prototype](#toc_weirprototype)</sub>
 
 # Weir.prototype.hideContextProp(type, regex)
 
@@ -147,6 +167,8 @@ from enclosing/subsequently-executed flow functions.
 
 `{object}` this
 
+<sub>Go: [TOC](#tableofcontents) | [Weir.prototype](#toc_weirprototype)</sub>
+
 # Weir.prototype.run()
 
 > Run collected `describe()` steps.
@@ -154,6 +176,10 @@ from enclosing/subsequently-executed flow functions.
 **See:**
 
 - [Batch](https://github.com/visionmedia/batch#api)
+
+<sub>Go: [TOC](#tableofcontents) | [Weir.prototype](#toc_weirprototype)</sub>
+
+<a name="describeprototype"></a>
 
 # Describe.prototype.it(name, cb)
 
@@ -168,6 +194,8 @@ from enclosing/subsequently-executed flow functions.
 
 - [Batch](https://github.com/visionmedia/batch#api)
 
+<sub>Go: [TOC](#tableofcontents) | [Describe.prototype](#toc_describeprototype)</sub>
+
 # Describe.prototype.describe(name, cb)
 
 > Add a `describe()` step.
@@ -181,6 +209,8 @@ from enclosing/subsequently-executed flow functions.
 
 - [Batch](https://github.com/visionmedia/batch#api)
 
+<sub>Go: [TOC](#tableofcontents) | [Describe.prototype](#toc_describeprototype)</sub>
+
 # Describe.prototype.before(cb)
 
 > Run a custom hook before the first `it()` in the current `describe()`.
@@ -189,6 +219,8 @@ from enclosing/subsequently-executed flow functions.
 
 - `{function} cb`
   - Async-mode is optional and auto-detected: `function(done) { ... done(); }`
+
+<sub>Go: [TOC](#tableofcontents) | [Describe.prototype](#toc_describeprototype)</sub>
 
 # Describe.prototype.beforeEach(cb)
 
@@ -199,6 +231,8 @@ from enclosing/subsequently-executed flow functions.
 - `{function} cb`
   - Async-mode is optional and auto-detected: `function(done) { ... done(); }`
 
+<sub>Go: [TOC](#tableofcontents) | [Describe.prototype](#toc_describeprototype)</sub>
+
 # Describe.prototype.after(cb)
 
 > Run a custom hook after the last `it()` in the current `describe()`.
@@ -208,6 +242,8 @@ from enclosing/subsequently-executed flow functions.
 - `{function} cb`
   - Async-mode is optional and auto-detected: `function(done) { ... done(); }`
 
+<sub>Go: [TOC](#tableofcontents) | [Describe.prototype](#toc_describeprototype)</sub>
+
 # Describe.prototype.afterEach(cb)
 
 > Run a custom hook after each `it()` in the current `describe()`.
@@ -216,5 +252,7 @@ from enclosing/subsequently-executed flow functions.
 
 - `{function} cb`
   - Async-mode is optional and auto-detected: `function(done) { ... done(); }`
+
+<sub>Go: [TOC](#tableofcontents) | [Describe.prototype](#toc_describeprototype)</sub>
 
 _&mdash;generated by [apidox](https://github.com/codeactual/apidox)&mdash;_
