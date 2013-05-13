@@ -4,21 +4,21 @@ _Source: [lib/weir/index.js](../lib/weir/index.js)_
 
 <a name="tableofcontents"></a>
 
-- <a name="toc_exports"></a>[exports.Weir](#exportsweir)
-- [exports.create](#exportscreate)
-- [exports.extend](#exportsextendext)
+- <a name="toc_exportsweir"></a><a name="toc_exports"></a>[exports.Weir](#exportsweir)
+- <a name="toc_exportscreate"></a>[exports.create](#exportscreate)
+- <a name="toc_exportsextendext"></a>[exports.extend](#exportsextendext)
 - <a name="toc_weir"></a>[Weir](#weir)
-- <a name="toc_weirprototype"></a>[Weir.prototype.addContextProp](#weirprototypeaddcontextpropkey-val)
-- [Weir.prototype.addRootDescribe](#weirprototypeaddrootdescribename-cb)
-- [Weir.prototype.currentDepth](#weirprototypecurrentdepth)
-- [Weir.prototype.hideContextProp](#weirprototypehidecontextproptype-regex)
-- [Weir.prototype.run](#weirprototyperun)
-- <a name="toc_describeprototype"></a>[Describe.prototype.it](#describeprototypeitname-cb)
-- [Describe.prototype.describe](#describeprototypedescribename-cb)
-- [Describe.prototype.before](#describeprototypebeforecb)
-- [Describe.prototype.beforeEach](#describeprototypebeforeeachcb)
-- [Describe.prototype.after](#describeprototypeaftercb)
-- [Describe.prototype.afterEach](#describeprototypeaftereachcb)
+- <a name="toc_weirprototypeaddcontextpropkey-val"></a><a name="toc_weirprototype"></a>[Weir.prototype.addContextProp](#weirprototypeaddcontextpropkey-val)
+- <a name="toc_weirprototypeaddrootdescribename-cb"></a>[Weir.prototype.addRootDescribe](#weirprototypeaddrootdescribename-cb)
+- <a name="toc_weirprototypecurrentdepth"></a>[Weir.prototype.currentDepth](#weirprototypecurrentdepth)
+- <a name="toc_weirprototypehidecontextproptype-regex"></a>[Weir.prototype.hideContextProp](#weirprototypehidecontextproptype-regex)
+- <a name="toc_weirprototyperun"></a>[Weir.prototype.run](#weirprototyperun)
+- <a name="toc_describeprototypeitname-cb"></a><a name="toc_describeprototype"></a><a name="toc_describe"></a>[Describe.prototype.it](#describeprototypeitname-cb)
+- <a name="toc_describeprototypedescribename-cb"></a>[Describe.prototype.describe](#describeprototypedescribename-cb)
+- <a name="toc_describeprototypebeforecb"></a>[Describe.prototype.before](#describeprototypebeforecb)
+- <a name="toc_describeprototypebeforeeachcb"></a>[Describe.prototype.beforeEach](#describeprototypebeforeeachcb)
+- <a name="toc_describeprototypeaftercb"></a>[Describe.prototype.after](#describeprototypeaftercb)
+- <a name="toc_describeprototypeaftereachcb"></a>[Describe.prototype.afterEach](#describeprototypeaftereachcb)
 
 <a name="exports"></a>
 
@@ -180,6 +180,8 @@ from enclosing/subsequently-executed flow functions.
 <sub>Go: [TOC](#tableofcontents) | [Weir.prototype](#toc_weirprototype)</sub>
 
 <a name="describeprototype"></a>
+
+<a name="describe"></a>
 
 # Describe.prototype.it(name, cb)
 
