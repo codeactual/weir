@@ -701,15 +701,21 @@
         }
     });
     require.alias("visionmedia-configurable.js/index.js", "weir/deps/configurable.js/index.js");
+    require.alias("visionmedia-configurable.js/index.js", "configurable.js/index.js");
     require.alias("codeactual-extend/index.js", "weir/deps/extend/index.js");
+    require.alias("codeactual-extend/index.js", "extend/index.js");
     require.alias("visionmedia-batch/index.js", "weir/deps/batch/index.js");
+    require.alias("visionmedia-batch/index.js", "batch/index.js");
     require.alias("component-emitter/index.js", "visionmedia-batch/deps/emitter/index.js");
     require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
     require.alias("component-clone/index.js", "weir/deps/clone/index.js");
+    require.alias("component-clone/index.js", "clone/index.js");
     require.alias("component-type/index.js", "component-clone/deps/type/index.js");
     require.alias("component-emitter/index.js", "weir/deps/emitter/index.js");
+    require.alias("component-emitter/index.js", "emitter/index.js");
     require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
     require.alias("component-bind/index.js", "weir/deps/bind/index.js");
+    require.alias("component-bind/index.js", "bind/index.js");
     require.alias("weir/lib/weir/index.js", "weir/index.js");
     if (typeof exports == "object") {
         module.exports = require("weir");
@@ -718,6 +724,6 @@
             return require("weir");
         });
     } else {
-        window["weir"] = require("weir");
+        this["weir"] = require("weir");
     }
 })();
