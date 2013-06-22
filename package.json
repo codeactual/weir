@@ -45,5 +45,8 @@
     "originSha": "d1c2197793",
     "originUrl": "/var/dev/gitemplate-node-component/.git"
   },
-  "author": "David Smith <codeactual@gmail.com>"
+  "author": "David Smith <codeactual@gmail.com>",
+  "devdir-ci": {
+    "version": 1
+  }
 }
