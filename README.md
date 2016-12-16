@@ -8,7 +8,7 @@ Library for creating BDD-style test flows for JavaScript.
 * Manage `it()` and hook contexts with property injection/omission
 * Supply your own runner CLI, assertion library, etc.
 
-API modeled after [Mocha](http://visionmedia.github.io/mocha/).
+API modeled after [Mocha](http://mochajs.org/).
 
 [![Build Status](https://travis-ci.org/codeactual/weir.png)](https://travis-ci.org/codeactual/weir)
 
