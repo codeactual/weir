@@ -72,16 +72,6 @@ flow
 
 [More](docs/examples.md)
 
-## Installation
-
-### [Component](https://github.com/component/component)
-
-    $ component install codeactual/weir
-
-### [NPM](https://npmjs.org/package/weir)
-
-    npm install weir
-
 ## Documentation
 
 * [API](docs/Weir.md)
